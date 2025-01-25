@@ -1,0 +1,27 @@
+2. React의 글로벌 API URL 관리
+여러 곳에서 URL을 작성해야 할 경우, URL 관리를 위해 별도의 설정 파일을 사용하는 것이 좋습니다.
+
+src/config.js 파일 생성
+javascript
+복사
+편집
+const API_BASE_URL = "http://localhost:8000";
+
+export default API_BASE_URL;
+React에서 사용
+React 컴포넌트에서 config.js를 불러와 사용합니다:
+
+javascript
+복사
+편집
+import API_BASE_URL from '../config';
+
+axios.get(`${API_BASE_URL}/cover-letter/create/${recruitJobId}/`)
+    .then(response => {
+        setPrompts(response.data.prompts);
+        setStarExperiences(response.data.star_experiences);
+    })
+    .catch(err => {
+        console.error("Error fetching data:", err);
+        setError('데이터를 가져오는 중 문제가 발생했습니다.');
+    });

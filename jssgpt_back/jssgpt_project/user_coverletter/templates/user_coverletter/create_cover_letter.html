@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create Cover Letter</title>
+    </head>
+    <body>
+        <h1>Create Cover Letter</h1>
+        
+        <h2>Select Experiences for Each Prompt</h2>
+        <form method="post" action="{% url 'user_coverletter:create_cover_letter' recruit_job.id %}">
+            {% csrf_token %}
+            {% for prompt in prompts %}
+                <div>
+                    <h3>{{ prompt.question_text }}</h3>
+                    <label for="selected_star_{{ prompt.id }}">Select STAR Experience:</label>
+                    <select name="selected_star_{{ prompt.id }}" id="selected_star_{{ prompt.id }}">
+                        {% if cover_letters|length > 0 %}
+                            {% for cover_letter in cover_letters %}
+                                {% if cover_letter.prompt == prompt and cover_letter.selected_starexperience %}
+                                    <option value="{{ cover_letter.selected_starexperience.id }}" selected>
+                                        {{ cover_letter.selected_starexperience.title }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled selected>-- Select an Experience --</option>
+                        {% endif %}
+                        {% for star in star_experiences %}
+                            <option value="{{ star.id }}">{{ star.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
+            <button type="submit">Save Selections</button>
+        </form>
+
+        <h2>Generate Drafts</h2>
+        <form method="post" action="{% url 'user_coverletter:generate_cover_letter_draft' recruit_job.id %}">
+            {% csrf_token %}
+            <button type="submit">Generate Draft</button>
+        </form>
+    </body>
+</html>

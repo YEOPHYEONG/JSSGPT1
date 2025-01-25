@@ -1,0 +1,123 @@
+/* 페이지 전체 스타일 */
+.cover-letter-page {
+    font-family: 'Arial', sans-serif;
+    padding: 40px 20px;
+    background-color: #f9f9f9;
+    min-height: 100vh; /* 페이지가 짧아도 꽉 채우기 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 헤더 스타일 */
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin: 0;
+    font-weight: bold;
+}
+
+/* 문항 목록 */
+.cover-letter-prompts {
+    width: 100%;
+    max-width: 800px; /* 중앙 정렬과 최대 너비 */
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.cover-letter-prompts h3 {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.cover-letter-prompts p {
+    font-size: 1rem;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.cover-letter-prompts select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 20px;
+    background: #f5f5f5;
+    transition: border-color 0.3s ease;
+}
+
+.cover-letter-prompts select:focus {
+    border-color: #007bff;
+}
+
+/* 버튼 스타일 */
+.cover-letter-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* 버튼 간격 */
+    margin-top: 20px;
+}
+
+.cover-letter-buttons button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cover-letter-buttons button:hover {
+    background-color: #0056b3;
+}
+
+.cover-letter-buttons button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+/* 생성된 초안 스타일 */
+.generated-drafts {
+    width: 100%;
+    max-width: 800px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.generated-drafts h2 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.generated-drafts p {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.generated-drafts p:last-child {
+    border-bottom: none;
+}

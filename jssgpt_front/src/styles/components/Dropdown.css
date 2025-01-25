@@ -1,0 +1,18 @@
+.dropdown-container {
+    width: 100%;
+    margin: var(--spacing-medium) 0;
+  }
+  
+  .dropdown-select {
+    width: 100%;
+    padding: var(--spacing-small);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-medium);
+  }
+  
+  .dropdown-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Cover Letter</title>
+    <style>
+        .prompt-button {
+            margin: 5px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        .prompt-button.active {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        #editor {
+            margin-top: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-top: 10px;
+        }
+
+        #star-experience {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Cover Letter</h1>
+
+    <div>
+        <h3>Navigate Prompts</h3>
+        {% for prompt in prompts %}
+            <button id="prompt-{{ prompt.id }}" class="prompt-button" data-prompt-id="{{ prompt.id }}">
+                {{ forloop.counter }}
+            </button>
+        {% endfor %}
+    </div>
+
+    <div id="editor">
+        <h4>Editing Prompt:</h4>
+        <p id="prompt-text"></p>
+        <textarea id="content"></textarea>
+    </div>
+
+    <div id="star-experience">
+        <h4>Select STAR Experience:</h4>
+        <select id="star-experience-select">
+            {% for star in star_experiences %}
+                <option value="{{ star.id }}" {% if star.id == selected_starexperience_id %}selected{% endif %}>
+                    {{ star.title }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <script>
+        const contents = {{ contents|safe }};
+        const prompts = {{ prompts|safe }};
+        let currentPromptId = Object.keys(contents)[0]; // 첫 번째 문항 ID를 초기값으로 설정
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateEditor(currentPromptId); // 페이지 로드 시 첫 문항 로드
+        });
+
+        function updateEditor(promptId) {
+            // 버튼 스타일 업데이트
+            document.querySelectorAll('.prompt-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(`prompt-${promptId}`).classList.add('active');
+
+            // 질문 텍스트 및 답변 내용 업데이트
+            const currentPrompt = prompts.find(p => p.id == promptId);
+            if (currentPrompt) {
+                document.getElementById('prompt-text').textContent = currentPrompt.question_text;
+            }
+            document.getElementById('content').value = contents[promptId] || '';
+            currentPromptId = promptId;
+        }
+
+        document.querySelectorAll('.prompt-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const promptId = this.dataset.promptId;
+                updateEditor(promptId);
+            });
+        });
+    </script>
+</body>
+</html>

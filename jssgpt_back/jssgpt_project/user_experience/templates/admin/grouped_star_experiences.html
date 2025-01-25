@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Grouped Star Experiences</h1>
+
+<p><a href="/admin/user_experience/starexperience/">Back to Star Experiences</a></p>
+
+{% for username, experiences in grouped_data.items %}
+    <h2>User: {{ username }}</h2>
+    <table border="1" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Situation</th>
+                <th>Task</th>
+                <th>Action</th>
+                <th>Result</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for experience in experiences %}
+            <tr>
+                <td>{{ experience.title }}</td>
+                <td>{{ experience.situation }}</td>
+                <td>{{ experience.task }}</td>
+                <td>{{ experience.action }}</td>
+                <td>{{ experience.result }}</td>
+                <td>{{ experience.created_at }}</td>
+                <td>{{ experience.updated_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+{% endfor %}
+
+{% endblock %}

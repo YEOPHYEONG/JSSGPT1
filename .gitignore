@@ -1,0 +1,14 @@
+# 환경설정 파일
+.env
+.env.local
+.env.production
+
+# Node.js 관련
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# 빌드 파일
+/build
+/dist
