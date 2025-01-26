@@ -17,3 +17,7 @@ db.sqlite3
 venv/
 ENV/
 env/.env
+
+# Ignore .env file
+.env
+resumes/

@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2v&_l@d9d7cvunzx_=3w8+$$^6=&*)($u$d!zz%_)9+%)sezgi'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,8 +45,10 @@ INSTALLED_APPS = [
     'langchain_app',
     'user_experience',
     'corsheaders',
+    'social_django',
     'rest_framework',
     'user_coverletter',
+    'authentication'
 ]
 
 MIDDLEWARE = [
@@ -60,8 +67,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 ROOT_URLCONF = 'jssgpt_project.urls'
-
-import os
 
 TEMPLATES = [
     {
@@ -88,11 +93,11 @@ WSGI_APPLICATION = 'jssgpt_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'jssgpt_db',  # 데이터베이스 이름
-        'USER': 'jssgpt_user',  # PostgreSQL 사용자 이름
-        'PASSWORD': 'jssgpt1!',  # PostgreSQL 사용자 비밀번호
-        'HOST': 'localhost',  # 데이터베이스 호스트
-        'PORT': '5432',  # PostgreSQL 기본 포트
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -138,12 +143,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-import os
-from dotenv import load_dotenv
-
-# .env 파일 로드
-load_dotenv()
-
 # 환경 변수 가져오기
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -169,3 +168,25 @@ LOGGING = {
         },
     },
 }
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',  # Google OAuth 백엔드
+    'django.contrib.auth.backends.ModelBackend',  # 기본 인증
+]
+
+# Google OAuth 2.0
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+
+# 로그인 후 리다이렉션 URL
+LOGIN_REDIRECT_URL = '/'
+
+# CORS 설정 (React와 통신 허용)
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React 앱의 주소
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "https://yourdomain.com",
+]

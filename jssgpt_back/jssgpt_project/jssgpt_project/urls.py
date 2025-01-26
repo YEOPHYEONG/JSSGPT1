@@ -22,4 +22,6 @@ urlpatterns = [
     path('user-experience/', include('user_experience.urls')),  # 앱의 URL 연결
     path('langchain/', include('langchain_app.urls')),  # langchain_app의 URL
     path('cover-letter/', include('user_coverletter.urls')),  # user_coverletter 앱의 URL 연결
+    path('auth/', include('authentication.urls')),  # 소셜 로그인
+
 ]
