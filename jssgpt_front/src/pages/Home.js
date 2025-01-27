@@ -11,15 +11,17 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  Button, // 버튼 추가
 } from '@mui/material';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css'; // 캘린더 스타일 추가
 import StarIcon from '@mui/icons-material/Star'; // 관심기업 아이콘
 import Header from '../components/Navigation/Header';
 import ChatSection from '../components/ChatSection';
+import { useNavigate } from 'react-router-dom'; // useNavigate 추가
 
 const Home = () => {
-  // 샘플 채용 데이터 (날짜별 공고 데이터)
+  const navigate = useNavigate(); // useNavigate 훅 사용
   const jobData = {
     '2024-12-28': [
       { id: 1, name: '네이버', type: '채', position: '개발자', status: '진행 중' },
@@ -36,29 +38,41 @@ const Home = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [favoriteCompanies, setFavoriteCompanies] = useState(['한화시멘트', '카카오', '네이버']);
 
-  // 날짜 선택 시 팝업 데이터 업데이트
   const handleDateClick = (date) => {
     const formattedDate = date.toISOString().split('T')[0];
     setPopupData(jobData[formattedDate] || []);
     setIsDialogOpen(true);
   };
 
-  // 관심 기업 추가
   const handleFavoriteClick = (company) => {
     if (!favoriteCompanies.includes(company)) {
       setFavoriteCompanies([...favoriteCompanies, company]);
     }
   };
 
-  // 검색 결과
   const filteredJobs = popupData.filter((job) =>
     job.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // 로그인 페이지로 이동 버튼 핸들러
+  const handleNavigateToSignIn = () => {
+    navigate('/signin');
+  };
 
   return (
     <>
       <Header />
       <Box sx={{ flexGrow: 1, padding: 2 }}>
+        {/* 로그인 버튼 */}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleNavigateToSignIn}
+          sx={{ marginBottom: 2 }}
+        >
+          로그인 페이지로 이동
+        </Button>
+
         {/* 검색창 */}
         <Box sx={{ marginBottom: 2 }}>
           <TextField
