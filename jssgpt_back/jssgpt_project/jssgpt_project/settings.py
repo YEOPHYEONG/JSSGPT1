@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'langchain_app',
     'user_experience',
     'corsheaders',
@@ -50,6 +51,8 @@ INSTALLED_APPS = [
     'user_coverletter',
     'authentication'
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -64,6 +67,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버
+    "http://127.0.0.1:3000"
 ]
 
 ROOT_URLCONF = 'jssgpt_project.urls'
@@ -165,6 +169,7 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
+                      
         },
     },
 }
@@ -184,9 +189,11 @@ LOGIN_REDIRECT_URL = '/'
 # CORS 설정 (React와 통신 허용)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 앱의 주소
+    "http://127.0.0.1:3000"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://yourdomain.com",
+    "http://127.0.0.1:3000"
 ]

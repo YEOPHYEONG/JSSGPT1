@@ -1,3 +1,4 @@
+// GoogleLoginButton.jsx
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
@@ -5,12 +6,12 @@ import axios from 'axios';
 const GoogleLoginButton = () => {
   const handleLoginSuccess = async (response) => {
     try {
-      // Google에서 받은 Access Token
-      const accessToken = response.credential;
+      // Google에서 받은 id_token (response.credential)
+      const idToken = response.credential;
 
-      // 백엔드로 Access Token 전달
+      // 백엔드로 id_token 전달
       const res = await axios.post('http://127.0.0.1:8000/auth/google/callback/', {
-        access_token: accessToken,
+        access_token: idToken, // 백엔드에서는 이를 id_token으로 처리합니다.
       });
 
       const { access, refresh, user } = res.data;

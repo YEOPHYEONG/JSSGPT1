@@ -1,105 +1,82 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
+# authentication/views.py
+import logging
+import requests
+
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from social_django.utils import load_strategy
-from django.contrib.auth.models import User
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import UserProfile
+
+logger = logging.getLogger(__name__)
+
+def validate_google_token(id_token):
+    """
+    Google의 id_token을 검증하여 토큰 정보를 리턴합니다.
+    """
+    google_api_url = "https://www.googleapis.com/oauth2/v3/tokeninfo"
+    response = requests.get(google_api_url, params={'id_token': id_token})
+    if response.status_code == 200:
+        return response.json()
+    raise Exception(f"Invalid Google ID Token: {response.text}")
+
+def issue_tokens_and_respond(user):
+    """
+    Simple JWT를 사용하여 refresh 및 access 토큰을 발급합니다.
+    """
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+        },
+    }
 
 class GoogleLoginCallbackView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print("Received POST request to GoogleLoginCallbackView.")  # 요청 로그
+        logger.info("Received POST request to GoogleLoginCallbackView.")
 
-        # 프론트엔드에서 전달된 Access Token 확인
-        access_token = request.data.get('access_token')
-        print(f"Access Token received: {access_token}")
-
-        if not access_token:
-            print("Access Token is missing!")  # 에러 디버깅
+        # React에서 전달한 토큰은 사실 id_token입니다.
+        id_token = request.data.get('access_token')
+        if not id_token:
+            logger.warning("ID Token is missing!")
             return Response({'error': 'Access token is missing'}, status=400)
 
-        # Google OAuth 전략 및 Backend 로드
+        # id_token 검증
         try:
-            strategy = load_strategy(request)
-            backend = strategy.get_backend('google-oauth2')
+            token_info = validate_google_token(id_token)
+            logger.info(f"Token Info: {token_info}")
         except Exception as e:
-            print(f"Error loading strategy or backend: {e}")  # 에러 로그
-            return Response({'error': 'Failed to load OAuth strategy'}, status=500)
+            logger.error(f"Invalid ID Token: {e}")
+            return Response({'error': 'Invalid Access Token'}, status=401)
 
-        # Google 사용자 인증
-        try:
-            user = backend.do_auth(access_token)
-            print(f"User authenticated: {user}")  # 인증 성공 여부 확인
-        except Exception as e:
-            print(f"Error during authentication: {e}")  # 인증 에러 로그
-            return Response({'error': 'Authentication failed'}, status=401)
-
-        if user:
-            # 이미 존재하는 사용자: JWT 발급
-            print(f"Existing user found: {user.username} ({user.email})")
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                },
-            })
-
-        # Google 사용자 데이터 가져오기
-        try:
-            user_info = backend.user_data(access_token)
-            print(f"User info retrieved: {user_info}")  # 사용자 데이터 로그
-        except Exception as e:
-            print(f"Error retrieving user data: {e}")  # 데이터 조회 에러 로그
-            return Response({'error': 'Failed to retrieve user data'}, status=500)
-
-        email = user_info.get('email')
+        # token_info에서 필요한 정보 추출 (예: email, sub, picture 등)
+        email = token_info.get('email')
         if not email:
-            print("Email is missing in user data.")  # 이메일 누락 체크
+            logger.warning("Email is missing in token info.")
             return Response({'error': 'Email is required for authentication'}, status=400)
 
-        username = email.split('@')[0]  # 이메일 앞부분을 username으로 사용
-        print(f"Username generated: {username}")
-
-        # 사용자 생성 또는 가져오기
-        try:
-            user, created = User.objects.get_or_create(
-                email=email,
-                defaults={'username': username}
-            )
-            print(f"User {'created' if created else 'found'}: {user.username} ({user.email})")
-        except Exception as e:
-            print(f"Error creating or retrieving user: {e}")  # 사용자 생성 에러
-            return Response({'error': 'Failed to create or retrieve user'}, status=500)
-
+        username = email.split('@')[0]
+        user, created = User.objects.get_or_create(email=email, defaults={'username': username})
         if created:
-            try:
-                # 사용자 추가 설정 (예: 프로필 이미지)
-                user.set_unusable_password()  # 소셜 로그인 사용자 비밀번호 비활성화
-                user.save()
-                print(f"New user created and saved: {user.username}")
-            except Exception as e:
-                print(f"Error saving user: {e}")  # 저장 에러
-                return Response({'error': 'Failed to save user'}, status=500)
+            user.set_unusable_password()
+            user.save()
+            logger.info(f"New user created: {user.username}")
 
-        # JWT 발급
-        try:
-            refresh = RefreshToken.for_user(user)
-            print(f"JWT tokens issued for user: {user.username}")
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                },
-            })
-        except Exception as e:
-            print(f"Error issuing JWT tokens: {e}")  # JWT 발급 에러
-            return Response({'error': 'Failed to issue tokens'}, status=500)
+            # UserProfile 생성 (예: social_id는 token_info의 'sub' 필드를 사용)
+            social_id = token_info.get('sub')
+            if social_id:
+                UserProfile.objects.create(
+                    user=user,
+                    provider='google',
+                    social_id=social_id,
+                    profile_image=token_info.get('picture')
+                )
+        return Response(issue_tokens_and_respond(user))
