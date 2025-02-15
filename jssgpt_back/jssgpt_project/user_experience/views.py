@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from dotenv import load_dotenv  # 추가
 from langchain_community.chat_models import ChatOpenAI  # 1번 코드와 동일하게 사용한다고 가정
 # 또는 from langchain_openai import OpenAI
+from django.contrib.auth.decorators import login_required
 import logging
 
 from .models import RawExperience, STARExperience
@@ -28,6 +29,7 @@ llm = ChatOpenAI(
     openai_api_key=openai_api_key
 )
 
+@login_required
 def upload_resume(request):
     """
     이력서를 업로드하면 다음 작업 수행:

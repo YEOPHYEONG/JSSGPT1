@@ -3,6 +3,7 @@ import logging
 import requests
 
 from django.contrib.auth.models import User
+from django.contrib.auth import login
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -79,4 +80,7 @@ class GoogleLoginCallbackView(APIView):
                     social_id=social_id,
                     profile_image=token_info.get('picture')
                 )
+        login(request, user)
+
         return Response(issue_tokens_and_respond(user))
+    
