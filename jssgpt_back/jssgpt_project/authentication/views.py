@@ -80,7 +80,6 @@ class GoogleLoginCallbackView(APIView):
                     social_id=social_id,
                     profile_image=token_info.get('picture')
                 )
-        login(request, user)
-
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return Response(issue_tokens_and_respond(user))
     
