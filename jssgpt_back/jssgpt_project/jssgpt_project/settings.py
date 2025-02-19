@@ -70,6 +70,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000"
 ]
 
+# 쿠키 기반 인증을 위해 자격증명(쿠키) 전송 허용
+CORS_ALLOW_CREDENTIALS = True
+
 ROOT_URLCONF = 'jssgpt_project.urls'
 
 TEMPLATES = [
