@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'social_django',
     'rest_framework',
     'user_coverletter',
-    'authentication'
+    'authentication',
+    'crawler'
 ]
 
 SITE_ID = 1

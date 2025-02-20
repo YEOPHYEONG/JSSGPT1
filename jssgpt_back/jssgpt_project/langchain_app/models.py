@@ -20,6 +20,7 @@ class Recruitment(models.Model):
     end_date = models.DateField()  # 채용 종료일
     notes = models.TextField(null=True, blank=True)  # 직무 및 문항 데이터 저장용
     custom_id = models.CharField(max_length=255, unique=True, editable=False, null=True)  # 채용 공고 ID
+    recruitment_link = models.URLField(null=True, blank=True)  # 새로 추가
 
     def save(self, *args, **kwargs):
         # 기업명과 순번 기반으로 custom_id 생성
@@ -41,6 +42,7 @@ class RecruitJob(models.Model):
     related_technologies = models.TextField(null=True, blank=True)  # 직무 관련 기술
     soft_skills = models.TextField(null=True, blank=True)  # 소프트 스킬
     key_strengths = models.TextField(null=True, blank=True)  # 필요 강점
+    recruitment_type = models.CharField(max_length=50, null=True, blank=True)  # 새 필드 추가    
 
     def __str__(self):
         return f"{self.recruitment.title} - {self.title}"
