@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'langchain_app',
+    'langchain_app.apps.LangchainAppConfig',
     'user_experience',
     'corsheaders',
     'social_django',
@@ -193,11 +193,18 @@ LOGIN_REDIRECT_URL = '/'
 # CORS 설정 (React와 통신 허용)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 앱의 주소
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
-    "https://yourdomain.com",
+    "http://127.0.0.1:5173",
     "http://127.0.0.1:3000"
 ]
+
+# RabbitMQ 브로커 URL 설정 (기본 사용자/비밀번호, localhost 기준)
+CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = None  # 결과 저장이 필요하면 다른 백엔드를 설정하세요.

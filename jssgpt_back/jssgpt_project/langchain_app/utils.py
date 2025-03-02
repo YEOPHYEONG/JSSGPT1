@@ -108,7 +108,7 @@ def generate_and_save_job_info(company_name, recruitment, job_title):
     회사명, 채용 공고, 직무명을 받아 LangChain을 통해 정보를 생성하고 저장
     """
     prompt = f"""
-    {company_name}의 {job_title}의 기본 설명, 수행 업무, 직무 요구 역량, 직무 관련 소프트 스킬, 필요 강점, 합격 사례에 대해서 자세하게 조사해줘.
+    {company_name}의 {job_title}의 기본 설명, 수행 업무, 직무 요구 역량, 직무 관련 소프트 스킬, 필요 강점에 대해서 자세하게 조사해줘.
     """
     response = llm.predict(prompt)
     print(f"[DEBUG] LangChain Response for Job: {response}")

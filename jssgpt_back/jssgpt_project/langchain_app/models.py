@@ -1,3 +1,4 @@
+# langchain_app/models.py
 from django.db import models
 
 class Company(models.Model):
@@ -21,6 +22,7 @@ class Recruitment(models.Model):
     notes = models.TextField(null=True, blank=True)  # 직무 및 문항 데이터 저장용
     custom_id = models.CharField(max_length=255, unique=True, editable=False, null=True)  # 채용 공고 ID
     recruitment_link = models.URLField(null=True, blank=True)  # 새로 추가
+    jss_link = models.URLField(null=True, blank=True)  # 추가 필드
 
     def save(self, *args, **kwargs):
         # 기업명과 순번 기반으로 custom_id 생성
@@ -51,6 +53,7 @@ class RecruitJob(models.Model):
 class CoverLetterPrompt(models.Model):
     recruit_job = models.ForeignKey(RecruitJob, on_delete=models.CASCADE, related_name='cover_letter_prompts')
     question_text = models.TextField()  # 자기소개서 문항
+    limit = models.PositiveIntegerField(null=True, blank=True)  # 글자수 제한 추가
     outline = models.TextField(null=True, blank=True)  # AI가 생성한 개요
     created_at = models.DateTimeField(auto_now_add=True)  # 생성 시각
     updated_at = models.DateTimeField(auto_now=True)  # 수정 시각

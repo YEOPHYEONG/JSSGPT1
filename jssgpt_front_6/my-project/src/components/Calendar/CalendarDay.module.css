@@ -1,0 +1,26 @@
+/* src/components/Calendar/CalendarDay.module.css */
+.dayCell {
+    background-color: #678f83;
+    border: 1px solid #ffffff;
+    padding: 6px;
+    box-sizing: border-box;
+    position: relative;
+    overflow-y: auto;
+  }
+  
+  .dateLabel {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .jobItem {
+    cursor: pointer;
+    margin-bottom: 3px;
+    font-size: 0.9rem;
+  }
+  
+  /* "오늘" 날짜만 강조하고 싶을 때 */
+.todayCell {
+    background-color: #58b698; /* 원하는 강조색 */
+  }
+  

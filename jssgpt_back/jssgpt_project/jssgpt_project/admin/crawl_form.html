@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h2>특정 날짜 크롤링</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">크롤링 실행</button>
+  </form>
+{% endblock %}

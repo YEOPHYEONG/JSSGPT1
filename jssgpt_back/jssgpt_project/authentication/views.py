@@ -3,13 +3,14 @@ import logging
 import requests
 
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout as auth_logout
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import UserProfile
+from .serializers import UserSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -82,4 +83,17 @@ class GoogleLoginCallbackView(APIView):
                 )
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return Response(issue_tokens_and_respond(user))
-    
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        auth_logout(request)
+        return Response({"detail": "Logged out successfully."})

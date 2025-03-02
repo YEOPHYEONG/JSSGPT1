@@ -1,0 +1,61 @@
+/* src/components/Header/Header.module.css */
+.header {
+    width: 100%;
+    background-color: #678f83; /* 객체 색상 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 60px;
+    box-sizing: border-box;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .profileArea {
+    position: relative;
+  }
+  
+  .profileButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .profileIcon {
+    width: 30px;
+    height: 30px;
+  }
+  
+  /* 드롭다운 메뉴 */
+  .dropdownMenu {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background-color: #678f83;
+    border: 1px solid #ffffff;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+  
+  .email {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .menuItem {
+    background: none;
+    border: none;
+    color: #ffffff;
+    text-align: left;
+    padding: 5px 0;
+    cursor: pointer;
+  }
+  

@@ -1,0 +1,74 @@
+/* src/pages/CoverLetterList.module.css */
+
+.container {
+    background-color: #323232;
+    min-height: 100vh;
+    padding: 1rem;
+    color: #ffffff;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .error {
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+  }
+  
+  /* 카드들을 격자 형태로 배치 */
+  .cardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  /* 개별 카드 */
+  .card {
+    background-color: #678f83;
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  
+  .card:hover {
+    opacity: 0.9;
+  }
+  
+  /* 카드 상단: 기업명과 마지막 작성일 */
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .companyName {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .updatedAt {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+  
+  /* 카드 하단 */
+  .cardBody {
+    margin-top: 0.5rem;
+  }
+  
+  .recruitJob {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .essayQuestion {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  

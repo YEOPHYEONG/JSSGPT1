@@ -1,0 +1,28 @@
+/* src/pages/Login.module.css */
+
+.loginPage {
+    background-color: #323232;  /* 다크모드 배경 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+  }
+  
+  .loginContainer {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .loginBox {
+    width: 300px;
+    height: 300px;          /* 정사각형 영역 */
+    background-color: #678F83;  /* 객체 색상 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+  

@@ -1,0 +1,131 @@
+/* src/pages/CompanyRecruitDetail.module.css */
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    color: #ffffff;
+  }
+  
+  .topBar {
+    background-color: #678f83; /* 객체 색상 */
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .companyName {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+  
+  .recruitPeriod {
+    font-size: 1.2rem;
+    opacity: 0.9;
+  }
+  
+  .details {
+    margin-bottom: 20px;
+  }
+  
+  .linkAnchor {
+    color: #ffffff;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  
+  .linkAnchor:hover {
+    text-decoration: none;
+  }
+  
+  .jobGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .jobCard {
+    background-color: #678f83;
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+    padding: 16px;
+    box-sizing: border-box;
+    transition: transform 0.2s;
+  }
+  
+  .jobCard:hover {
+    transform: scale(1.02);
+  }
+  
+  .jobHeader {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .jobTitle {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .jobType {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  .jobLink {
+    margin-bottom: 10px;
+  }
+  
+  /* 자기소개서 문항 영역 */
+  .essayList {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .essayItem {
+    position: relative;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;        /* 2줄 제한 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;            /* 기본에는 숨김 */
+    text-overflow: ellipsis;
+    max-height: 3em;             /* 2줄 정도 높이 */
+    cursor: default;
+    margin: 5px 0;
+    white-space: normal;
+  }
+  
+  /* 마우스 호버 시 부모의 overflow를 visible로 변경하여 tooltip이 보이게 함 */
+  .essayItem:hover {
+    overflow: visible;
+  }
+  
+  /* 마우스 호버 시 전체 문항 툴팁 표시 */
+  .essayItem:hover::after {
+    content: attr(data-fulltext);
+    position: absolute;
+    top: 100%;         /* 요소 바로 아래에 표시 */
+    left: 0;
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 4px;
+    width: 300px;      /* 필요에 따라 조정 */
+    white-space: pre-wrap;
+    box-sizing: border-box;
+  }
+  
+  .loadingContainer {
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  

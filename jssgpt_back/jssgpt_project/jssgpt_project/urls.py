@@ -23,4 +23,5 @@ urlpatterns = [
     path('langchain/', include('langchain_app.urls')),  # langchain_app의 URL
     path('cover-letter/', include('user_coverletter.urls')),  # user_coverletter 앱의 URL 연결
     path('auth/', include('authentication.urls')),  # 소셜 로그인
+    path('api/', include('langchain_app.urls')),  # recruitment 관련 엔드포인트 포함
 ]

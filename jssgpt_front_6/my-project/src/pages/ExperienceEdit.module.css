@@ -1,0 +1,108 @@
+/* src/pages/ExperienceEdit.module.css */
+
+/* 전체 컨테이너 */
+.container {
+    background-color: #323232;
+    min-height: 100vh;
+    padding: 1rem;
+    color: #ffffff;
+  }
+  
+  /* 상단 헤더바 (제목 + 버튼) */
+  .headerBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* 페이지 제목 */
+  .title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    margin-top: 0;
+  }
+  
+  /* '경험 추가하기' 버튼 */
+  .addButton {
+    background-color: #678f83;
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .addButton:hover {
+    opacity: 0.9;
+  }
+  
+  /* 에러 메시지 */
+  .error {
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+  }
+  
+  /* 드롭다운 메뉴 */
+  .dropdown {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  /* STAR 경험 전체 컨테이너 */
+  .starContainer {
+    background-color: #678f83;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* 상황, 과업, 행동, 결과 각각의 항목 */
+  .starItem {
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  /* 항목의 라벨(예: 상황, 과업, 행동, 결과) */
+  .starLabel {
+    display: inline-block;
+    width: 60px;
+    font-weight: bold;
+    margin-right: 1rem;
+    color: #ffffff;
+  }
+  
+  /* 수정 가능한 텍스트/입력 */
+  .starInput {
+    flex: 1;
+    background-color: #ffffff;
+    color: #000000;
+    border: none;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: 4px;
+    resize: vertical;
+  }
+  
+  /* 저장 버튼 */
+  .saveButton {
+    width: 90%;
+    margin: 0 auto; /* 컨테이너 내 가로 중앙 정렬 */
+    display: block;
+    background-color: rgba(0, 0, 0, 0.4); /* 검은색, 투명도 40% */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  
+  .saveButton:hover {
+    opacity: 0.9;
+  }
+  

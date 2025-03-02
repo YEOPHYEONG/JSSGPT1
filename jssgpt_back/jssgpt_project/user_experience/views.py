@@ -138,3 +138,81 @@ def upload_resume(request):
 
     # GET 요청: 업로드 폼 렌더링
     return render(request, 'user_experience/upload_resume.html', {'form': form})
+
+@login_required
+def get_star_experiences(request):
+    """
+    현재 로그인된 사용자의 STARExperience 목록을 JSON으로 반환 (updated_at 내림차순)
+    """
+    star_exps = STARExperience.objects.filter(user=request.user).order_by('-updated_at')
+    data = []
+    for exp in star_exps:
+        data.append({
+            'id': exp.id,
+            'title': exp.title,
+            'situation': exp.situation,
+            'task': exp.task,
+            'action': exp.action,
+            'result': exp.result
+        })
+    return JsonResponse(data, safe=False)
+
+@login_required
+def create_star_experience(request):
+    """
+    새로운 STARExperience를 빈 값으로 생성
+    """
+    if request.method == 'POST':
+        try:
+            # user에 해당하는 RawExperience 가져오기 (없으면 생성)
+            raw_experience, _ = RawExperience.objects.get_or_create(user=request.user)
+
+            data = json.loads(request.body)  # { title, situation, task, action, result }
+            exp = STARExperience.objects.create(
+                user=request.user,
+                raw_experience=raw_experience,
+                title=data.get('title', ''),
+                situation=data.get('situation', ''),
+                task=data.get('task', ''),
+                action=data.get('action', ''),
+                result=data.get('result', '')
+            )
+            return JsonResponse({
+                'id': exp.id,
+                'title': exp.title,
+                'situation': exp.situation,
+                'task': exp.task,
+                'action': exp.action,
+                'result': exp.result
+            })
+        except Exception as e:
+            logger.error(f"Error creating new STARExperience: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
+
+@login_required
+def update_star_experience(request, star_id):
+    """
+    기존 STARExperience를 수정
+    """
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            exp = STARExperience.objects.get(id=star_id, user=request.user)
+
+            exp.title = data.get('title', exp.title)
+            exp.situation = data.get('situation', exp.situation)
+            exp.task = data.get('task', exp.task)
+            exp.action = data.get('action', exp.action)
+            exp.result = data.get('result', exp.result)
+            exp.save()
+
+            return JsonResponse({'message': 'STARExperience updated successfully.'})
+        except STARExperience.DoesNotExist:
+            return JsonResponse({'error': 'STARExperience not found.'}, status=404)
+        except Exception as e:
+            logger.error(f"Error updating STARExperience: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
+

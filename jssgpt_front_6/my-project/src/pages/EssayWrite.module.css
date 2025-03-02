@@ -1,0 +1,159 @@
+/* src/pages/EssayWrite.module.css */
+
+/* 전체 컨테이너 */
+.essayContainer {
+  width: 90%;
+  max-width: 1200px;
+  margin: 20px auto;
+  display: flex;
+  gap: 20px;
+  color: #ffffff;
+  /* 화면 높이에서 헤더/푸터 높이를 뺀 값만큼 컨테이너가 차지하도록 */
+  min-height: calc(100vh - 160px);
+}
+
+.leftSection {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.topBar {
+  background-color: #678f83;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.companyName {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.recruitmentTitle {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* 에디터 전체 영역: 세로 배치를 위해 column 사용 */
+.essayWriteArea {
+  flex: 1;
+  background-color: #678f83;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+}
+
+/* 문항 탭: 가로 배치 */
+.questionTabs {
+  display: flex;
+  flex-direction: row; /* 가로 배치 */
+  gap: 8px;
+  margin-bottom: 10px; /* 탭과 작성 박스 사이 여백 */
+}
+
+/* 탭 아이템 */
+.tabItem {
+  background-color: #527469;
+  text-align: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.tabItem:hover {
+  background-color: #405c52;
+}
+
+.activeTab {
+  background-color: #323232;
+}
+
+/* 작성 박스: flex로 세로 확장 */
+.essayBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid #ffffff;
+  border-radius: 8px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.questionText {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+/* 문자수 표시 */
+.charCount {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+/* 구분선 */
+.separator {
+  border: 0;
+  border-top: 1px solid #ffffff;
+  margin: 10px 0;
+}
+
+/* 텍스트 에어리어: flex로 남은 공간 채우기 */
+.textArea {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background-color: transparent;
+  color: #ffffff;
+}
+
+/* 우측 영역 (예: AI 안내) */
+.rightSection {
+  flex: 1;
+  background-color: #678f83;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.aiNotice {
+  font-size: 14px;
+  text-align: center;
+  margin: 0 10px;
+}
+
+/* 하단 버튼 영역 */
+.bottomBar {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.backButton {
+  background-color: #678f83;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 10px;
+}
+.backButton:hover {
+  background-color: #527469;
+}
