@@ -1,28 +1,28 @@
+# langchain_app/signals.py
+import logging
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Company, Recruitment, RecruitJob, CoverLetterPrompt
-from .utils import generate_and_save_company_info, generate_and_save_job_info, generate_and_save_cover_letter_outline
+from django.db import transaction
+from .models import Company, RecruitJob, CoverLetterPrompt
+from .tasks import generate_company_info_task, generate_job_info_task, generate_outline_task
 
-@receiver(post_save, sender=Recruitment)
-def handle_new_recruitment(sender, instance, created, **kwargs):
-    if not created:
-        return  # 수정된 경우 작업하지 않음
+logger = logging.getLogger(__name__)
 
-    print(f"[DEBUG] Recruitment Created: {instance}")
-
-    # 1. 기업 정보 확인 및 생성
-    company, created = Company.objects.get_or_create(name=instance.company.name)
+@receiver(post_save, sender=Company)
+def company_post_save(sender, instance, created, **kwargs):
     if created:
-        generate_and_save_company_info(company)
+        transaction.on_commit(lambda: generate_company_info_task.delay(instance.id))
+        logger.info("Enqueued company info task for Company id %s", instance.id)
 
-    # 2. 채용 직무 생성 및 정보 저장
-    for job_data in instance.job_titles:  # job_titles는 입력 데이터에서 전달받음
-        job = generate_and_save_job_info(
-            instance.company.name,
-            instance,
-            job_data["title"]
-        )
+@receiver(post_save, sender=RecruitJob)
+def recruitjob_post_save(sender, instance, created, **kwargs):
+    if created:
+        transaction.on_commit(lambda: generate_job_info_task.delay(instance.id))
+        logger.info("Enqueued job info task for RecruitJob id %s", instance.id)
 
-        # 3. 자기소개서 문항 생성
-        for question in job_data.get("questions", []):
-            generate_and_save_cover_letter_outline(job, question)
+@receiver(post_save, sender=CoverLetterPrompt)
+def coverletterprompt_post_save(sender, instance, created, **kwargs):
+    # outline 필드가 아직 채워지지 않은 경우에만 LLM 작업 실행
+    if created and not instance.outline:
+        transaction.on_commit(lambda: generate_outline_task.delay(instance.recruit_job.id, instance.question_text))
+        logger.info("Enqueued outline task for CoverLetterPrompt id %s (RecruitJob id %s)", instance.id, instance.recruit_job.id)
