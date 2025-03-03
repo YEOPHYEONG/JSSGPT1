@@ -12,3 +12,6 @@ yarn-error.log
 # 빌드 파일
 /build
 /dist
+
+# macOS 관련 파일
+.DS_Store

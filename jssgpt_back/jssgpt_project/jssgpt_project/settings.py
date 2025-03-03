@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['jssgpt.com', 'www.jssgpt.com', '223.130.159.46']
 
 
 # Application definition
@@ -66,9 +66,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CORS 설정: 개발 서버와 함께 실제 서비스 도메인도 필요하다면 추가하세요.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "https://jssgpt.com",       # 실제 서비스 (https)
 ]
 
 # 쿠키 기반 인증을 위해 자격증명(쿠키) 전송 허용
@@ -146,6 +149,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -173,31 +178,26 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
-                      
         },
     },
 }
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.google.GoogleOAuth2',  # Google OAuth 백엔드
-    'django.contrib.auth.backends.ModelBackend',  # 기본 인증
+    'django.contrib.auth.backends.ModelBackend',   # 기본 인증
 ]
 
 # Google OAuth 2.0
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True  # https로 리다이렉트 URL 생성
 
 # 로그인 후 리다이렉션 URL
 LOGIN_REDIRECT_URL = '/'
 
-# CORS 설정 (React와 통신 허용)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React 앱의 주소
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173"
-]
-
+# CSRF 설정: HTTPS 서비스 도메인을 포함하도록 수정
 CSRF_TRUSTED_ORIGINS = [
+    "https://jssgpt.com",  # 실제 서비스
     "http://localhost:3000",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000"
