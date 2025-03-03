@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     async function fetchCurrentUser() {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/auth/current-user/', { withCredentials: true });
+        const res = await axios.get('/auth/current-user/', { withCredentials: true });
         setUser(res.data);
       } catch (error) {
         console.error("Failed to fetch current user:", error);

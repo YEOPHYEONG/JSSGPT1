@@ -21,7 +21,7 @@ const ExperienceEdit = () => {
   const fetchStarExperiences = async () => {
     try {
       const response = await axios.get(
-        'http://127.0.0.1:8000/user-experience/star-experiences/',
+        '/user-experience/star-experiences/',
         { withCredentials: true }
       );
       setStarExperiences(response.data);
@@ -48,7 +48,7 @@ const ExperienceEdit = () => {
       const csrfToken = getCookie('csrftoken');
       const experience = starExperiences[index];
       const response = await axios.put(
-        `http://127.0.0.1:8000/user-experience/star-experiences/${id}/update/`,
+        `/user-experience/star-experiences/${id}/update/`,
         {
           title: experience.title,
           situation: experience.situation,
@@ -81,7 +81,7 @@ const ExperienceEdit = () => {
     try {
       const csrfToken = getCookie('csrftoken');
       const response = await axios.post(
-        'http://127.0.0.1:8000/user-experience/star-experiences/create/',
+        '/user-experience/star-experiences/create/',
         {
           title: '',
           situation: '',

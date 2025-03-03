@@ -32,7 +32,7 @@ function CompanyRecruitDetail() {
   const handleCardClick = async (job) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/cover-letter/get/?recruit_job_id=${job.id}`,
+        `/cover-letter/get/?recruit_job_id=${job.id}`,
         { withCredentials: true }
       );      
       const coverData = response.data;

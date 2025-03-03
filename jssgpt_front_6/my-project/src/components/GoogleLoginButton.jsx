@@ -10,7 +10,7 @@ const GoogleLoginButton = () => {
   const handleLoginSuccess = async (credentialResponse) => {
     try {
       const idToken = credentialResponse.credential;
-      const res = await axios.post('http://127.0.0.1:8000/auth/google/callback/', {
+      const res = await axios.post('/auth/google/callback/', {
         access_token: idToken,
       }, { withCredentials: true });
       

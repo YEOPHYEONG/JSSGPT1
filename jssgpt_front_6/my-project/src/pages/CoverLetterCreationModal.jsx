@@ -15,7 +15,7 @@ const CoverLetterCreationModal = ({ recruitJobId, onClose, onGenerationComplete 
   useEffect(() => {
     if (step === 2) {
       // 1) 추천 데이터 (추천된 STARExperience 목록 포함)
-      axios.get(`http://127.0.0.1:8000/cover-letter/create/${recruitJobId}/`, {
+      axios.get(`/cover-letter/create/${recruitJobId}/`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
         withCredentials: true,
       })
@@ -40,7 +40,7 @@ const CoverLetterCreationModal = ({ recruitJobId, onClose, onGenerationComplete 
       });
 
       // 2) 전체 STARExperience 목록 가져오기
-      axios.get(`http://127.0.0.1:8000/user-experience/star-experiences/`, {
+      axios.get(`/user-experience/star-experiences/`, {
         withCredentials: true,
       })
       .then(res => {
@@ -73,7 +73,7 @@ const CoverLetterCreationModal = ({ recruitJobId, onClose, onGenerationComplete 
     });
     try {
       await axios.post(
-        `http://127.0.0.1:8000/cover-letter/create/${recruitJobId}/`,
+        `/cover-letter/create/${recruitJobId}/`,
         formPayload,
         {
           headers: {
@@ -86,7 +86,7 @@ const CoverLetterCreationModal = ({ recruitJobId, onClose, onGenerationComplete 
       setStep(3);
       setLoading(true);
       await axios.post(
-        `http://127.0.0.1:8000/cover-letter/generate-draft/${recruitJobId}/`,
+        `/cover-letter/generate-draft/${recruitJobId}/`,
         {},
         {
           headers: {

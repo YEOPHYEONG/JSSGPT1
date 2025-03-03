@@ -16,7 +16,7 @@ async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJob
   );
   const csrfToken = getCookie('csrftoken');
   return axios.put(
-    `http://127.0.0.1:8000/cover-letter/update-content/`,
+    `/cover-letter/update-content/`,
     {
       prompt_id: promptId,
       recruit_job_id: recruitJobId,
@@ -67,7 +67,7 @@ function EssayWrite() {
   // 폴링: 일정 간격마다 DB에서 cover letter 내용을 가져옴
   useEffect(() => {
     const interval = setInterval(() => {
-      axios.get(`http://127.0.0.1:8000/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
+      axios.get(`/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
         withCredentials: true,
       })
       .then(res => {

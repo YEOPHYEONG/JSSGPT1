@@ -36,7 +36,7 @@ const UploadResume = () => {
       // CSRF 토큰을 가져와서 헤더에 포함시킵니다.
       const csrfToken = getCookie('csrftoken');
       const response = await axios.post(
-        'http://127.0.0.1:8000/user-experience/upload-resume/',
+        '/user-experience/upload-resume/',
         formData,
         {
           headers: { 
