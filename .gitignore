@@ -15,3 +15,30 @@ yarn-error.log
 
 # macOS 관련 파일
 .DS_Store
+
+# Python
+*.pyc
+__pycache__/
+
+# Django
+db.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*~
+*.swp
+.env
+
+# Virtualenv
+venv/
+ENV/
+env/.env
+
+# Ignore .env file
+.env
+resumes/
+
+# Django 정적 파일 폴더 무시
+jssgpt_project/staticfiles/
+
