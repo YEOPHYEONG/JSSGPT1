@@ -9,7 +9,22 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
-        // rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/auth': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/cover-letter': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/user-experience': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/langchain': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
       }
     }
   }

@@ -60,8 +60,26 @@ class RecruitmentAdmin(admin.ModelAdmin):
                         )
                         employment_id = comp.get("employment_id")
                         if employment_id:
-                            recruitment.custom_id = employment_id
-                            recruitment.save()
+                            recruitment, created = Recruitment.objects.update_or_create(
+                            custom_id=employment_id,
+                            defaults={
+                                'company': company,
+                                'title': f"{company_name} 채용 공고",
+                                'start_date': start_date,
+                                'end_date': end_date,
+                                'recruitment_link': recruitment_link,
+                                'jss_link': jss_link,
+                            }
+                        )
+                        else:
+                            recruitment = Recruitment.objects.create(
+                                company=company,
+                                title=f"{company_name} 채용 공고",
+                                start_date=start_date,
+                                end_date=end_date,
+                                recruitment_link=recruitment_link,
+                                jss_link=jss_link
+                            )
 
                         jobs_data = comp.get("jobs", [])
                         for job_data in jobs_data:
