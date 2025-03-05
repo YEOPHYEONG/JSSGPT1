@@ -111,7 +111,12 @@ class RecruitmentAdmin(admin.ModelAdmin):
                 return redirect("..")
         else:
             form = CrawlForm()
-        context = dict(self.admin_site.each_context(request), form=form, subtitle="크롤링 실행")
+        context = dict(
+            self.admin_site.each_context(request),
+            form=form,
+            subtitle="크롤링 실행",   # 부제목: 원하는 텍스트
+            title="특정 날짜 크롤링"   # 타이틀: 원하는 텍스트
+        )
         return render(request, "admin/crawl_form.html", context)
 
 # 인라인으로 CoverLetterPrompt를 표시
