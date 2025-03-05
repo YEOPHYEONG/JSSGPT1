@@ -21,3 +21,10 @@ env/.env
 # Ignore .env file
 .env
 resumes/
+
+
+# 가상환경 폴더 무시
+../venv/
+
+# Django 정적 파일 폴더 무시
+jssgpt_project/staticfiles/
