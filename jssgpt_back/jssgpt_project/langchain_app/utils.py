@@ -83,12 +83,12 @@ def generate_and_save_company_info(company_name):
     prompt = f"""
     {company_name}에 대해 조사해줘. 다음 사항을 포함해서 알려줘:
 
-    - **산업:** 해당 기업이 속한 산업의 동향과 시장 상황.
-    - **회사 비전:** 회사가 추구하는 비전
-    - **미션:** 회사가 추구하는 사명, 핵심 가치.
-    - **기업 문화와 인재상:** 회사가 어떤 문화를 가지고 있으며, 어떤 유형의 인재를 중요하게 여기는지.
-    - **최근 주요 성과:** 최근에 회사가 이룬 업적이나 발표한 성장 지표, 수상 내역 등.
-    - **현재 주요 이슈:** 회사가 직면한 도전이나 업계의 이슈, 혹은 최신 뉴스.
+    - 산업: 해당 기업이 속한 산업의 동향과 시장 상황.
+    - 회사 비전: 회사가 추구하는 비전
+    - 미션: 회사가 추구하는 사명, 핵심 가치.
+    - 기업 문화와 인재상: 회사가 어떤 문화를 가지고 있으며, 어떤 유형의 인재를 중요하게 여기는지.
+    - 최근 주요 성과: 최근에 회사가 이룬 업적이나 발표한 성장 지표, 수상 내역 등.
+    - 현재 주요 이슈: 회사가 직면한 도전이나 업계의 이슈, 혹은 최신 뉴스.
 
     각 항목을 지원자가 자기소개서 작성 시 참고할 수 있도록 자세하고 명확하게 정리해줘.
     """
@@ -115,11 +115,11 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
     prompt = f"""
     {company_name}의 {job_title} 직무에 대해 조사해줘. 아래 사항을 중심으로 자세히 알려줘:
 
-    - **직무 설명:** 해당 직무의 기본적인 역할과 책임이 무엇인지.
-    - **수행 업무:** 이 직무에서 일상적으로 수행하게 될 구체적인 업무 내용은 무엇인지.
-    - **필요한 기술:** 성공적인 업무 수행을 위해 필요한 전문 지식이나 기술, 자격 요건.
-    - **관련 소프트 스킬:** 해당 직무에서 특히 중요하게 평가되는 의사소통, 리더십 등 소프트 스킬들.
-    - **필요 강점:** 이 직무에서 두각을 나타내기 위해 요구되는 성향이나 강점들.
+    - 직무 설명: 해당 직무의 기본적인 역할과 책임이 무엇인지.
+    - 수행 업무: 이 직무에서 일상적으로 수행하게 될 구체적인 업무 내용은 무엇인지.
+    - 필요한 기술: 성공적인 업무 수행을 위해 필요한 전문 지식이나 기술, 자격 요건.
+    - 관련 소프트 스킬: 해당 직무에서 특히 중요하게 평가되는 의사소통, 리더십 등 소프트 스킬들.
+    - 필요 강점: 이 직무에서 두각을 나타내기 위해 요구되는 성향이나 강점들.
 
     위 정보를 정리할 때, 지원자가 자기소개서에 본인의 어떤 역량과 강점을 강조하면 좋을지도 함께 제안해줘.
     """
@@ -141,7 +141,18 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
 def generate_and_save_cover_letter_outline(job, question):
     """
     자기소개서 문항 개요를 생성하고 DB에 저장합니다.
+    만약 동일한 자기소개서 문항(question_text)을 가진 CoverLetterPrompt 인스턴스가 이미 존재하고,
+    outline 필드가 채워져 있다면, LLM을 호출하지 않고 기존 값을 그대로 반환합니다.
     """
+    # 해당 job에 대해 같은 question_text를 가진 인스턴스가 있는지 확인
+    prompt_instance = job.cover_letter_prompts.filter(question_text=question).first()
+    
+    # 이미 존재하고 outline 필드가 채워져 있다면 업데이트 없이 반환
+    if prompt_instance and prompt_instance.outline:
+        print(f"[DEBUG] CoverLetterOutline already exists for question: {question}")
+        return prompt_instance
+    
+    # 새로운 개요 생성을 위해 LLM을 호출합니다.
     prompt = f"""
     이제 채용 회사와 직무 정보를 바탕으로 자기소개서의 전체 **개요(아웃라인)**를 만들어줘. 우선 자기소개서 문항들을 파악해야 해.
 
@@ -150,20 +161,27 @@ def generate_and_save_cover_letter_outline(job, question):
 
     이제 각 문항에 대해 답변의 개요를 작성해줘. 개요에는 다음 내용이 들어가면 좋겠어:
 
-    - **핵심 주제:** 해당 문항에서 강조해야 할 내용이 무엇인지 한 문장으로 요약 (예: 지원 동기에서는 왜 이 회사인지에 대한 설명).
-    - **포함할 키워드:** 회사 조사와 직무 조사에서 찾은 관련 키워드나 개념 중 해당 문항에 넣으면 좋은 것.
-    - **경험 사례 연결:** 답변에 활용할 만한 지원자의 경험이나 역량 (현재 단계에서 지원자 경험 정보가 없으면 일반적인 예시로 적어줘. 만약 지원자 경험이 주어져 있다면 그 중 어떤 것을 사용할지 제안).
+    - 핵심 주제: 해당 문항에서 강조해야 할 내용이 무엇인지 한 문장으로 요약 (예: 지원 동기에서는 왜 이 회사인지에 대한 설명).
+    - 포함할 키워드: 회사 조사와 직무 조사에서 찾은 관련 키워드나 개념 중 해당 문항에 넣으면 좋은 것.
+    - 경험 사례 연결: 답변에 활용할 만한 지원자의 경험이나 역량 (현재 단계에서 지원자 경험 정보가 없으면 일반적인 예시로 적어줘. 만약 지원자 경험이 주어져 있다면 그 중 어떤 것을 사용할지 제안).
 
     각 문항별로 bullet point 형태로 개요를 제시해줘. 이 개요는 나중에 실제 자기소개서 답안을 작성할 때 가이드라인이 될 거야.
     동시에 개요에는 다음 내용을 유의하여 작성해줘.
     1. 한 문항에는 하나의 경험만 서술할 것.
-    2. 같은 {RecruitJob}의 자기소개서를 작성할 때, 동일한 경험, 역량, 방향성 등이 겹치지 않게, 개요를 작성할 것.
+    2. 같은 {company_name}의 같은 {recruitment}의 {RecruitJob}의 자기소개서를 작성할 때, 문항들이 각기 다른 경험, 역량을 강조할 수 있도록 개요를 작성할 것.
     """
     outline = llm.predict(prompt)
-    cover_letter_prompt = CoverLetterPrompt.objects.create(
-        recruit_job=job,
-        question_text=question,
-        outline=outline,
-    )
-    print(f"[DEBUG] Saved Cover Letter Outline: {question}")
-    return cover_letter_prompt
+    # 기존 인스턴스가 있다면 업데이트, 없으면 새로 생성합니다.
+    if prompt_instance:
+        prompt_instance.outline = outline
+        prompt_instance.save()
+        print(f"[DEBUG] Updated Cover Letter Outline for question: {question}")
+        return prompt_instance
+    else:
+        new_instance = CoverLetterPrompt.objects.create(
+            recruit_job=job,
+            question_text=question,
+            outline=outline,
+        )
+        print(f"[DEBUG] Created new Cover Letter Outline for question: {question}")
+        return new_instance
