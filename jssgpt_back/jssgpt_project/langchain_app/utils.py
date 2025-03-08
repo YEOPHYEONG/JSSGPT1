@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
 from .models import Company, RecruitJob, CoverLetterPrompt
