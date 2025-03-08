@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['jssgpt.com', 'www.jssgpt.com', '223.130.159.46', '127.0.0.1']
 
@@ -208,3 +208,12 @@ CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = None  # 결과 저장이 필요하면 다른 백엔드를 설정하세요.
+
+REST_FRAMEWORK = {
+    # 기본 렌더러를 JSON으로 한정 (API 전용)
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    # 예외 핸들러를 기본 DRF 핸들러로 사용
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
