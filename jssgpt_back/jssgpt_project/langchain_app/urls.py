@@ -7,3 +7,8 @@ urlpatterns = [
     path('recruitment-events/', get_recruitment_events, name='recruitment-events'),
     path('recruitments/<int:id>/', get_recruitment_detail, name='recruitment-detail'),
 ]
+# 예시: 프로젝트 urls.py의 맨 아래에 추가
+from django.views.generic import RedirectView
+urlpatterns += [
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico')),
+]
