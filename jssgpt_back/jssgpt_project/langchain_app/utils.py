@@ -138,7 +138,7 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
     print(f"[DEBUG] Updated Job Info: {recruit_job_instance.title}")
     return recruit_job_instance
 
-def generate_and_save_cover_letter_outline(recruitment, job, question):
+def generate_and_save_cover_letter_outline(job, question):
     """
     자기소개서 문항 개요를 생성하고 DB에 저장합니다.
     만약 동일한 자기소개서 문항(question_text)을 가진 CoverLetterPrompt 인스턴스가 이미 존재하고,
@@ -168,7 +168,7 @@ def generate_and_save_cover_letter_outline(recruitment, job, question):
     각 문항별로 bullet point 형태로 개요를 제시해줘. 이 개요는 나중에 실제 자기소개서 답안을 작성할 때 가이드라인이 될 거야.
     동시에 개요에는 다음 내용을 유의하여 작성해줘.
     1. 한 문항에는 하나의 경험만 서술할 것.
-    2. 같은 {recruitment}의 {RecruitJob}의 자기소개서를 작성할 때, 문항들이 각기 다른 경험, 역량을 강조할 수 있도록 개요를 작성할 것.
+    2. 같은 {RecruitJob}의 자기소개서를 작성할 때, 문항들이 각기 다른 경험, 역량을 강조할 수 있도록 개요를 작성할 것.
     """
     outline = llm.predict(prompt)
     # 기존 인스턴스가 있다면 업데이트, 없으면 새로 생성합니다.
