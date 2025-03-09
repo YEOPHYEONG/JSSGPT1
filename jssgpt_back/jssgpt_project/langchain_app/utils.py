@@ -34,7 +34,6 @@ def parse_company_info(response):
         for line in lines:
             if ":" in line:
                 key, value = line.split(":", 1)
-                # 키 앞의 숫자, 대시, 별표 등을 제거
                 clean_key = key.lstrip("-* ").strip()
                 parsed_response[clean_key] = value.strip()
     except Exception as e:
@@ -53,17 +52,13 @@ def parse_langchain_response(response):
         lines = response.splitlines()
         for line in lines:
             line = line.strip()
-            # 키-값 구분: 콜론(:)이 포함되고, 첫 문자가 숫자가 아니라면 (즉, 키로 인식)
             if ":" in line and not line[0].isdigit():
                 if current_key and current_value:
-                    # 정규표현식으로 키 앞의 불필요한 문자를 제거
                     clean_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
                     parsed_response[clean_key] = " ".join(current_value).strip()
                 current_key, value = line.split(":", 1)
-                # 키에서 "-","*" 및 선행 공백 제거
                 current_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
                 current_value = [value.strip()]
-            # 목록 항목 등 추가적인 줄 처리 (예: "- ..." 또는 "1. ..."로 시작하는 경우)
             elif line.startswith(("-", "*", "1.", "2.", "3.")):
                 current_value.append(line)
             elif line:
@@ -74,7 +69,6 @@ def parse_langchain_response(response):
     except Exception as e:
         print(f"[ERROR] Failed to parse LangChain response: {e}")
     return parsed_response
-
 
 def generate_and_save_company_info(company_name):
     """
@@ -128,7 +122,6 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
     parsed_data = parse_langchain_response(response)
     print(f"[DEBUG] Parsed Response for Job: {parsed_data}")
     
-    # recruit_job_instance의 각 필드를 업데이트합니다.
     recruit_job_instance.description = parsed_data.get("직무 설명", "N/A")
     recruit_job_instance.required_skills = parsed_data.get("필요한 기술", "N/A")
     recruit_job_instance.soft_skills = parsed_data.get("관련 소프트 스킬", "N/A")
@@ -138,26 +131,20 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
     print(f"[DEBUG] Updated Job Info: {recruit_job_instance.title}")
     return recruit_job_instance
 
-def generate_and_save_cover_letter_outline(job, question):
+def generate_and_save_cover_letter_outline(prompt_instance):
     """
-    자기소개서 문항 개요를 생성하고 DB에 저장합니다.
-    만약 동일한 자기소개서 문항(question_text)을 가진 CoverLetterPrompt 인스턴스가 이미 존재하고,
-    outline 필드가 채워져 있다면, LLM을 호출하지 않고 기존 값을 그대로 반환합니다.
+    주어진 CoverLetterPrompt 인스턴스에 대해, LLM을 호출하여 자기소개서 문항 개요(outline)를 생성하고 DB에 저장합니다.
+    각 prompt 인스턴스마다 개별적으로 outline을 생성하며, 기존 인스턴스는 새로 생성하지 않고 업데이트합니다.
     """
-    # 해당 job에 대해 같은 question_text를 가진 인스턴스가 있는지 확인
-    prompt_instance = job.cover_letter_prompts.filter(question_text=question).first()
-    
-    # 이미 존재하고 outline 필드가 채워져 있다면 업데이트 없이 반환
-    if prompt_instance and prompt_instance.outline:
-        print(f"[DEBUG] CoverLetterOutline already exists for question: {question}")
+    if prompt_instance.outline:
+        print(f"[DEBUG] CoverLetterOutline already exists for prompt id: {prompt_instance.id}")
         return prompt_instance
-    
-    # 새로운 개요 생성을 위해 LLM을 호출합니다.
-    prompt = f"""
+
+    prompt_text = f"""
     이제 채용 회사와 직무 정보를 바탕으로 자기소개서의 전체 **개요(아웃라인)**를 만들어줘. 우선 자기소개서 문항들을 파악해야 해.
 
     자기소개서 문항:  
-    {question}
+    {prompt_instance.question_text}
 
     이제 각 문항에 대해 답변의 개요를 작성해줘. 개요에는 다음 내용이 들어가면 좋겠어:
 
@@ -168,20 +155,10 @@ def generate_and_save_cover_letter_outline(job, question):
     각 문항별로 bullet point 형태로 개요를 제시해줘. 이 개요는 나중에 실제 자기소개서 답안을 작성할 때 가이드라인이 될 거야.
     동시에 개요에는 다음 내용을 유의하여 작성해줘.
     1. 한 문항에는 하나의 경험만 서술할 것.
-    2. 같은 {RecruitJob}의 자기소개서를 작성할 때, 문항들이 각기 다른 경험, 역량을 강조할 수 있도록 개요를 작성할 것.
+    2. 같은 {prompt_instance.recruit_job}의 자기소개서를 작성할 때, 문항들이 각기 다른 경험, 역량을 강조할 수 있도록 개요를 작성할 것.
     """
-    outline = llm.predict(prompt)
-    # 기존 인스턴스가 있다면 업데이트, 없으면 새로 생성합니다.
-    if prompt_instance:
-        prompt_instance.outline = outline
-        prompt_instance.save()
-        print(f"[DEBUG] Updated Cover Letter Outline for question: {question}")
-        return prompt_instance
-    else:
-        new_instance = CoverLetterPrompt.objects.create(
-            recruit_job=job,
-            question_text=question,
-            outline=outline,
-        )
-        print(f"[DEBUG] Created new Cover Letter Outline for question: {question}")
-        return new_instance
+    outline = llm.predict(prompt_text)
+    prompt_instance.outline = outline
+    prompt_instance.save()
+    print(f"[DEBUG] Generated and saved Cover Letter Outline for prompt id: {prompt_instance.id}")
+    return prompt_instance
