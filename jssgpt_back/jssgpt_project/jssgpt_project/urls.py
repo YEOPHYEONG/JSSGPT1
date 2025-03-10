@@ -19,9 +19,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin 페이지 URL
-    path('user-experience/', include('user_experience.urls')),  # 앱의 URL 연결
-    path('langchain/', include('langchain_app.urls')),  # langchain_app의 URL
-    path('cover-letter/', include('user_coverletter.urls')),  # user_coverletter 앱의 URL 연결
-    path('auth/', include('authentication.urls')),  # 소셜 로그인
+    path('api/user-experience/', include('user_experience.urls')),  # 앱의 URL 연결
+    path('api/langchain/', include('langchain_app.urls')),  # langchain_app의 URL
+    path('api/cover-letter/', include('user_coverletter.urls')),  # user_coverletter 앱의 URL 연결
+    path('api/auth/', include('authentication.urls')),  # 소셜 로그인
     path('api/', include('langchain_app.urls')),  # recruitment 관련 엔드포인트 포함
 ]

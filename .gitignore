@@ -42,3 +42,5 @@ resumes/
 # Django 정적 파일 폴더 무시
 jssgpt_project/staticfiles/
 
+.DS_Store
+.DS_Store

@@ -16,7 +16,7 @@ async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJob
   );
   const csrfToken = getCookie('csrftoken');
   return axios.put(
-    `/cover-letter/update-content/`,
+    `/api/cover-letter/update-content/`,
     {
       prompt_id: promptId,
       recruit_job_id: recruitJobId,
@@ -36,6 +36,7 @@ function EssayWrite() {
   const navigate = useNavigate();
   const location = useLocation();
   const { companyName, recruitmentTitle, questions, recruitJobId } = location.state || {};
+ 
 
   // 필수 데이터가 없으면 5초 후에 페이지 새로고침
   useEffect(() => {
@@ -67,7 +68,7 @@ function EssayWrite() {
   // 폴링: 일정 간격마다 DB에서 cover letter 내용을 가져옴
   useEffect(() => {
     const interval = setInterval(() => {
-      axios.get(`/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
+      axios.get(`/api/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
         withCredentials: true,
       })
       .then(res => {
@@ -106,7 +107,7 @@ function EssayWrite() {
   }, [coverContentMap, activeIndex, mergedQuestions]);
 
   const currentContent = essayContents[activeIndex];
-  const currentLimit = mergedQuestions[activeIndex].limit;
+  const currentLimit = mergedQuestions[activeIndex]?.limit;
   const currentQuestionText = mergedQuestions[activeIndex].question_text;
 
   // 자동 저장 함수: 변경된 경우에만 저장
@@ -167,16 +168,24 @@ function EssayWrite() {
   return (
     <>
       <Header />
-      {isPolling ? (
-        <div className={styles.loadingContainer}>
-          <p>자기소개서 내용을 불러오는 중입니다...</p>
-        </div>
-      ) : (
+    {isPolling ? (
+  <div className={styles.loadingContainer}>
+    <div className={styles.loadingContent}>
+      <div className={styles.spinner}></div> {/* ✅ 로딩 아이콘 */}
+      <p className={styles.loadingText}>자기소개서를 불러오는 중입니다...</p>
+
+      {/* ✅ 뒤로가기 버튼 (원하면 삭제 가능) */}
+      <button className={styles.backButton} onClick={handleGoBack}>
+        뒤로가기
+      </button>
+    </div>
+  </div>
+) : (
         <div className={styles.essayContainer}>
           <div className={styles.leftSection}>
             <div className={styles.topBar}>
               <span className={styles.companyName}>{companyName}</span>
-              <span className={styles.recruitmentTitle}>{recruitmentTitle}</span>
+              <span className={styles.recruitmentTitle}> 💼 채용직무: {recruitmentTitle}</span>
             </div>
             <div className={styles.essayWriteArea}>
               {/* 문항 탭 (가로 배치) */}

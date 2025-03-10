@@ -1,9 +1,8 @@
 /* src/components/Footer/Footer.module.css */
 .footer {
-    background-color: #678f83;
-    color: #ffffff;
-    text-align: center;
-    padding: 10px 0;
-    margin-top: auto; /* 화면 아래쪽에 위치 */
-  }
-  
+  background-color: #0056b3;
+  color: #ffffff;
+  text-align: center;
+  padding: 10px 0;
+  margin-top: auto; /* 화면 아래쪽에 위치 */
+}

@@ -1,4 +1,3 @@
-// src/pages/CompanyRecruitDetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './CompanyRecruitDetail.module.css';
@@ -19,10 +18,8 @@ function CompanyRecruitDetail() {
     async function fetchDetail() {
       try {
         const response = await axios.get(`/api/recruitments/${recruitmentId}/`);
-        console.log("Recruitment Detail:", response.data);
         setRecruitData(response.data);
       } catch (err) {
-        console.error("Failed to fetch recruitment detail:", err);
         setError(err);
       }
     }
@@ -32,22 +29,20 @@ function CompanyRecruitDetail() {
   const handleCardClick = async (job) => {
     try {
       const response = await axios.get(
-        `/cover-letter/get/?recruit_job_id=${job.id}`,
+        `/api/cover-letter/get/?recruit_job_id=${job.id}`,
         { withCredentials: true }
-      );      
-      const coverData = response.data;
-      if (Object.keys(coverData).length === 0) {
-        // 해당 recruit job의 cover letter가 없으면 모달 표시 (생성 프로세스 진행)
+      );
+
+      if (Object.keys(response.data).length === 0) {
         setSelectedJob(job);
         setShowModal(true);
       } else {
-        // 이미 생성되어 있다면 EssayWrite 페이지로 이동
         navigate('/essay', {
           state: {
             companyName: recruitData.company_name,
             recruitmentTitle: job.title,
-            questions: job.essays, // 각 문항 객체에 id가 포함되어 있어야 합니다.
-            recruitJobId: job.id,  // recruitJobId 추가
+            questions: job.essays,
+            recruitJobId: job.id,
           },
         });
       }
@@ -55,14 +50,11 @@ function CompanyRecruitDetail() {
       console.error("Error checking cover letter existence:", error);
     }
   };
-  
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
+
+  const handleModalClose = () => setShowModal(false);
 
   const handleGenerationComplete = () => {
     setShowModal(false);
-    // 생성 후 EssayWrite 페이지로 이동
     navigate('/essay', {
       state: {
         companyName: recruitData.company_name,
@@ -73,6 +65,7 @@ function CompanyRecruitDetail() {
   };
 
   if (error) return <div>Error: {error.message}</div>;
+
   if (!recruitData) {
     return (
       <>
@@ -90,30 +83,32 @@ function CompanyRecruitDetail() {
   return (
     <>
       <Header />
-      <div className={styles.container}>
-        <div className={styles.topBar}>
-          <div className={styles.companyName}>{company_name}</div>
-          <div className={styles.recruitPeriod}>
-            {start_date} ~ {end_date}
-          </div>
-        </div>
-        <div className={styles.details}>
-          <h1>{recruitment_title}</h1>
-          {/* 채용 공고 링크 등 상세 정보 */}
-        </div>
-        <div className={styles.jobGrid}>
-          {recruitments &&
-            recruitments.map((job) => (
+      <main className={styles.container}>
+
+        {/* ✅ 상단바 개선 */}
+        <section className={styles.topBar}>
+          <h1 className={styles.companyName}>📆 {company_name} 📆</h1>
+          <p className={styles.recruitPeriod}> 채용기간: {start_date} ~ {end_date}</p>
+        </section>
+
+        <section className={styles.mainBox}>
+          <h2 className={styles.details}>{recruitment_title}</h2>
+
+          <section className={styles.jobGrid}>
+            {recruitments?.map((job) => (
               <div
                 key={job.id}
                 className={styles.jobCard}
                 onClick={() => handleCardClick(job)}
-                style={{ cursor: 'pointer' }}
               >
-                <div className={styles.jobHeader}>
-                  <span className={styles.jobTitle}>{job.title}</span>
+                {/* ✅ hover 멘트 */}
+                <div className={styles.hoverMessage}> 자기소개서 작성!</div>
+
+                <header className={styles.jobHeader}>
+                  <h3 className={styles.jobTitle}>{job.title}</h3>
                   <span className={styles.jobType}>{job.type}</span>
-                </div>
+                </header>
+
                 <div className={styles.jobLink}>
                   <a
                     href={job.link}
@@ -125,8 +120,9 @@ function CompanyRecruitDetail() {
                     채용 공고 사이트 바로가기
                   </a>
                 </div>
+
                 <div className={styles.essayList}>
-                  {job.essays && job.essays.length > 0 ? (
+                  {job.essays?.length > 0 ? (
                     job.essays.map((essay, idx) => (
                       <p
                         key={idx}
@@ -137,18 +133,20 @@ function CompanyRecruitDetail() {
                         }
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {essay.question_text}
+                       📝 {essay.question_text}
                         {essay.limit && ` (글자수 제한: ${essay.limit})`}
                       </p>
                     ))
                   ) : (
-                    <p>자기소개서 문항이 없습니다.</p>
+                    <p className={styles.essayItem}>자기소개서 문항이 없습니다.</p>
                   )}
                 </div>
               </div>
             ))}
-        </div>
-      </div>
+          </section>
+        </section>
+      </main>
+
       {showModal && selectedJob && (
         <CoverLetterCreationModal
           recruitJobId={selectedJob.id}
@@ -156,6 +154,15 @@ function CompanyRecruitDetail() {
           onGenerationComplete={handleGenerationComplete}
         />
       )}
+      
+      {/* ✅ 플로팅 버튼 추가 */}
+<button
+  className={styles.floatingButton}
+  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+>
+  TOP
+</button>
+
       <Footer />
     </>
   );

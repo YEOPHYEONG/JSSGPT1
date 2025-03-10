@@ -9,6 +9,7 @@ import Footer from '../components/Footer/Footer';
 
 const ExperienceEdit = () => {
   const [starExperiences, setStarExperiences] = useState([]);
+  const [deletedExperiences, setDeletedExperiences] = useState([]);
   const [error, setError] = useState('');
   const [dropdownValue, setDropdownValue] = useState('');
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const ExperienceEdit = () => {
   const fetchStarExperiences = async () => {
     try {
       const response = await axios.get(
-        '/user-experience/star-experiences/',
+        '/api/user-experience/star-experiences/',
         { withCredentials: true }
       );
       setStarExperiences(response.data);
@@ -48,7 +49,7 @@ const ExperienceEdit = () => {
       const csrfToken = getCookie('csrftoken');
       const experience = starExperiences[index];
       const response = await axios.put(
-        `/user-experience/star-experiences/${id}/update/`,
+        `/api/user-experience/star-experiences/${id}/update/`,
         {
           title: experience.title,
           situation: experience.situation,
@@ -81,7 +82,7 @@ const ExperienceEdit = () => {
     try {
       const csrfToken = getCookie('csrftoken');
       const response = await axios.post(
-        '/user-experience/star-experiences/create/',
+        '/api/user-experience/star-experiences/create/',
         {
           title: '',
           situation: '',
@@ -107,6 +108,22 @@ const ExperienceEdit = () => {
     }
   };
 
+    // ✅ 경험 삭제 기능
+    const handleDeleteExperience = (index) => {
+      if (window.confirm("이 경험을 삭제하시겠습니까?")) {
+        const deleted = starExperiences[index];
+        setDeletedExperiences([...deletedExperiences, deleted]);
+        setStarExperiences(starExperiences.filter((_, i) => i !== index));
+      }
+    };
+  
+    // ✅ 경험 복원 기능
+    const handleRestoreExperience = (index) => {
+      const restored = deletedExperiences[index];
+      setStarExperiences([...starExperiences, restored]);
+      setDeletedExperiences(deletedExperiences.filter((_, i) => i !== index));
+    };
+
   return (
     <>
       <Header />
@@ -127,13 +144,15 @@ const ExperienceEdit = () => {
           value={dropdownValue}
           onChange={handleDropdownChange}
         >
-          <option value="">선택</option>
+          <option value="">필요한옵션기능추가예정</option>
           {/* 추후에 필요한 옵션이 있다면 여기에 추가 */}
         </select>
 
         {/* 2. 경험별 STAR구조 창 (수정 가능) */}
         {starExperiences.map((exp, index) => (
           <div key={exp.id} className={styles.starContainer}>
+             
+
             {/* Title도 편집 가능 */}
             <div className={styles.starItem}>
               <label className={styles.starLabel}>제목</label>
@@ -146,7 +165,7 @@ const ExperienceEdit = () => {
             </div>
 
             <div className={styles.starItem}>
-              <label className={styles.starLabel}>상황</label>
+              <label className={styles.starLabel}>상황(Situation)</label>
               <textarea
                 className={styles.starInput}
                 value={exp.situation}
@@ -155,7 +174,7 @@ const ExperienceEdit = () => {
             </div>
 
             <div className={styles.starItem}>
-              <label className={styles.starLabel}>과업</label>
+              <label className={styles.starLabel}>과업(Task)</label>
               <textarea
                 className={styles.starInput}
                 value={exp.task}
@@ -164,7 +183,7 @@ const ExperienceEdit = () => {
             </div>
 
             <div className={styles.starItem}>
-              <label className={styles.starLabel}>행동</label>
+              <label className={styles.starLabel}>행동(Action)</label>
               <textarea
                 className={styles.starInput}
                 value={exp.action}
@@ -173,7 +192,7 @@ const ExperienceEdit = () => {
             </div>
 
             <div className={styles.starItem}>
-              <label className={styles.starLabel}>결과</label>
+              <label className={styles.starLabel}>결과(Result)</label>
               <textarea
                 className={styles.starInput}
                 value={exp.result}
@@ -181,14 +200,29 @@ const ExperienceEdit = () => {
               />
             </div>
 
-            <button
-              className={styles.saveButton}
-              onClick={() => handleSave(exp.id, index)}
-            >
-              저장
-            </button>
+            <div className={styles.buttonContainer}>
+               <button
+               className={styles.saveButton}
+                 onClick={() => handleSave(exp.id, index)}>💾저장</button>
+               <button 
+               className={styles.deleteButton} 
+                onClick={() => handleDeleteExperience(index)}>🗑️제거</button>
+            </div>
           </div>
         ))}
+
+      {/* ✅ 삭제된 경험 복원 UI */}
+      {deletedExperiences.length > 0 && (
+          <div className={styles.restoreContainer}>
+            <h3>삭제된 경험</h3>
+            {deletedExperiences.map((exp, index) => (
+              <div key={index} className={styles.deletedExperience}>
+                <span>{exp.title}</span>
+                <button className={styles.restoreButton} onClick={() => handleRestoreExperience(index)}>복원</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <Footer />
     </>

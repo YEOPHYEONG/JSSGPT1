@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger('django')
 
 # OpenAI API 설정
-llm = ChatOpenAI(model="gpt-4", temperature=0)
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
 @login_required
 def create_cover_letter(request, recruit_job_id):
@@ -40,9 +40,17 @@ def create_cover_letter(request, recruit_job_id):
                 star_experiences = STARExperience.objects.filter(user=user)
                 star_texts = "\n".join([f"{star.title}: {star.situation}" for star in star_experiences])
                 prompt_text = f"""
-                {star_texts} 중에서 가장 {prompt.outline}에 적용할만한 STAR 경험의 ID들을 숫자 형태의 JSON 배열로 추천해줘.
+                자기소개서 문항의 아웃라인: {prompt.outline}
+                아래의 경험 목록 중, 위 아웃라인을 바탕으로 합격할만한 자기소개서를 쓸 수 있는 경험 ID를 한 개만 선택해줘.
+                경험 목록:
+                {star_texts}
+                결과는 백틱 등을 모두 제거한 숫자 형태의 JSON 배열로 반환해줘.
+                예: [1] 
+                그리고 같은 {cover_letter}
                 """
                 response = llm.predict(prompt_text)
+                # LLM 응답 로깅 추가
+                logger.info(f"LLM response for prompt {prompt.id}: {response}")
                 recommended_raw = json.loads(response)
                 # recommended_raw가 객체 리스트인 경우, 각 항목에서 'STARExperienceID' 키의 값을 추출
                 recommended_ids = []
@@ -110,7 +118,7 @@ def create_cover_letter(request, recruit_job_id):
 
 
 @login_required
-def generate_cover_letter_draft(request, recruit_job_id):
+def generate_cover_letter_draft(request, recruit_job_id,):
     if request.method == "POST":
         try:
             user = request.user
@@ -126,9 +134,18 @@ def generate_cover_letter_draft(request, recruit_job_id):
                     return JsonResponse({'error': f"No STAR experience selected for prompt {prompt.id}"}, status=400)
 
                 prompt_text = f"""
-                {prompt.outline}을 바탕으로 {star_experience}를 적절히 참고하여, {recruit_job.title}에 합격할 수 있는 자소서를 작성해줘.
+                이제 {prompt.outline}을 문항별로 작성해줘. 다음 요소들을 모두 반영해야 해:
+
+                - 앞서 조사한 {recruit_job.description}, {recruit_job.key_roles}, {recruit_job.required_skills}, {recruit_job.related_technologies}, {recruit_job.soft_skills}, {recruit_job.key_strengths} 중 해당 문항에 relevant한 부분을 포함하기.
+                - 해당 문항에 매칭된 {star_experience}을 구체적인 사례로 서술하기 (STAR 구조에서 도출한 내용 활용).
+                - **자기소개서 가이드라인**에서 제시한 어조나 작성 원칙 지키기 (논리적 흐름, 적극적 표현, 간결한 문장 등).
+                - 문항에서 요구하는 질문에 정확히 답하기.
+
+                한두 개 단락으로 구성된 답변을 작성해줘. 답변은 **지원자가 직접 쓴 것처럼 자연스러운 1인칭**으로 서술하고, 회사와 직무에 대한 열의를 담아 긍정적으로 표현해줘.
                 """
                 response = llm.predict(prompt_text)
+                # LLM 응답 로깅 추가
+                logger.info(f"LLM draft response for prompt {prompt.id}: {response}")
                 cover_letter.content = response
                 cover_letter.draft = False
                 cover_letter.save()

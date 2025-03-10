@@ -20,33 +20,39 @@
 }
 
 .topBar {
-  background-color: #678f83;
+  background-color: #0261af;
   padding: 10px 20px;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 2px 8px #000000;
 }
 
 .companyName {
-  font-size: 1.4rem;
+  font-size: 2rem;
   font-weight: bold;
+  text-shadow: 0px 1px 3px #000000;
+  
 }
 
 .recruitmentTitle {
   font-size: 1rem;
   opacity: 0.9;
+  font-weight: 600;
+  text-shadow: 0px 1px 3px #000000;
 }
 
 /* 에디터 전체 영역: 세로 배치를 위해 column 사용 */
 .essayWriteArea {
   flex: 1;
-  background-color: #678f83;
+  background-color: #c1e3ff7f;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   padding: 10px;
   gap: 10px;
+  box-shadow: 0 2px 8px #000000;
 }
 
 /* 문항 탭: 가로 배치 */
@@ -59,20 +65,24 @@
 
 /* 탭 아이템 */
 .tabItem {
-  background-color: #527469;
+  background-color: #0080ff;
   text-align: center;
   padding: 8px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  border: 1px solid #0127ff62;
+  text-shadow: 0px 1px 3px #000000;
 }
 
 .tabItem:hover {
-  background-color: #405c52;
+  background-color: #4590f3cc;
 }
 
 .activeTab {
-  background-color: #323232;
+  background-color: #1c1a1a;
+  font-weight: 900;
+  font-size: 1.2rem
 }
 
 /* 작성 박스: flex로 세로 확장 */
@@ -81,34 +91,46 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  border: 1px solid #ffffff;
+  border: 3px solid #00000059;
   border-radius: 8px;
   padding: 10px;
   box-sizing: border-box;
 }
 
 .questionText {
-  font-size: 1rem;
-  margin-bottom: 8px;
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  font-weight: bold;
+  color:#000000
+
 }
 
 /* 문자수 표시 */
 .charCount {
-  font-size: 0.8rem;
+  font-size: 1rem; 
   opacity: 0.8;
   text-align: right;
   margin-bottom: 8px;
+  font-weight: 600;
+  color:#030000c1
 }
 
 /* 구분선 */
 .separator {
   border: 0;
-  border-top: 1px solid #ffffff;
+  border-top: 3px solid #0000006b;
   margin: 10px 0;
+}
+
+/* ✅ 전체 페이지 폰트 설정 */
+body {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
 }
 
 /* 텍스트 에어리어: flex로 남은 공간 채우기 */
 .textArea {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', sans-serif !important;
   flex: 1;
   width: 100%;
   resize: none;
@@ -116,23 +138,37 @@
   outline: none;
   font-size: 1rem;
   background-color: transparent;
-  color: #ffffff;
+  color: #000000;
+  padding: 10px;
+  border-radius: 6px;
 }
+
+/* ✅ 입력 중 강조 효과 */
+.textArea:focus {
+  border: 1.5px solid #1d4d4f45;
+  background-color: #c1e3ff5b;
+  box-shadow: 0 0 10px rgba(29, 77, 79, 0.3);
+  outline: none;
+}
+
 
 /* 우측 영역 (예: AI 안내) */
 .rightSection {
   flex: 1;
-  background-color: #678f83;
+  background-color: #c1e3ff7f;
   border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 2px 4px #000000;
 }
 
 .aiNotice {
   font-size: 14px;
+  font-weight: 400;
   text-align: center;
   margin: 0 10px;
+  color:#000000;
 }
 
 /* 하단 버튼 영역 */
@@ -145,15 +181,81 @@
 }
 
 .backButton {
-  background-color: #678f83;
-  border: 1px solid #ffffff;
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  display:block;
+  margin: 20px auto;
+  background-color: #0056b3;
+  border: 0px solid #ffffff;
   color: #ffffff;
-  padding: 10px 16px;
+  padding: 10px 18px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: bold;
   margin-top: 10px;
+  transition: all 0.3s ease-in-out;
 }
 .backButton:hover {
-  background-color: #527469;
+  background-color: #DD9570c1;
+}
+
+/* ✅ 로딩 전체 화면 */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #ffecec;
+  color: #ffffff;
+  text-align: center;
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ✅ 로딩 텍스트 */
+.loadingText {
+  font-size: 2rem;
+  font-weight: bold;
+  color:#000000;
+}
+
+/* ✅ 로딩 스피너 */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(101, 89, 89, 0.527);
+  border-top-color: #000000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ✅ 스피너 애니메이션 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ✅ 뒤로가기 버튼 (로딩 전용) */
+.loadingContent .backButton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #0056b3;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.loadingContent .backButton:hover {
+  background-color: #047bfa;
 }

@@ -2,118 +2,136 @@
 
 /* 전체 화면을 덮는 어두운 오버레이 */
 .modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  /* 팝업 컨텐츠 박스 */
-  .modalContent {
-    background-color: #678F83; /* 원하는 배경색 (#678F83) */
-    padding: 2rem;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    color: #ffffff; /* 텍스트 색상 #FFFFFF */
-    text-align: center;
-  }
-  
-  /* 단계별 컨테이너 */
-  .stepContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  /* 제목 */
-  .stepTitle {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  /* 부제목 / 설명 */
-  .stepSubtitle {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    line-height: 1.4;
-    opacity: 0.9;
-  }
-  
-  /* 버튼 그룹 (가로 배치) */
-  .buttonGroup {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
-  }
-  
-  /* 기본 버튼 스타일 */
-  button {
-    cursor: pointer;
-    border: none;
-    border-radius: 8px;
-    padding: 0.7rem 1.2rem;
-    font-size: 1rem;
-  }
-  
-  /* "아뇨.." / "취소" 버튼 */
-  .cancelButton {
-    background-color: rgba(0, 0, 0, 0.4); /* 검은색, 불투명도 40% */
-    color: #ffffff;
-  }
-  
-  /* "네!!" / "생성 시작!" 버튼 */
-  .confirmButton,
-  .submitButton {
-    background-color: rgba(0, 0, 0, 0.4); /* 검은색, 불투명도 40% */
-    color: #ffffff;
-  }
-  
-  /* 문항별 행 */
-  .promptRow {
-    width: 100%;
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  /* 문항 라벨 */
-  .questionLabel {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* 드롭다운 스타일 */
-  .selectBox {
-    width: 100%;
-    background-color: #ffffff;
-    color: #000000;
-    padding: 0.5rem;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-  }
-  
-  /* 로딩 애니메이션 */
-  .loadingAnimation {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #ffffff;
-    border-top: 4px solid rgba(0,0,0,0);
-    border-radius: 50%;
-    margin: 1rem auto;
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3); /* 투명도 조금 더 낮춰 부드럽게 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* 팝업 컨텐츠 박스 */
+.modalContent {
+  background-color: #fffdfa; /* 약간 핑크/살구 톤이 섞인 흰색 */
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  color: #333333; /* 너무 새하얀 색보다 조금 진한 색으로 */
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* 부드러운 그림자 */
+}
+
+/* 단계별 컨테이너 */
+.stepContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 제목 */
+.stepTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #5d4037; /* 약간 갈색 톤 */
+}
+
+/* 부제목 / 설명 */
+.stepSubtitle {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  opacity: 0.9;
+  color: #6d4c41; /* 조금 더 짙은 갈색 톤 */
+}
+
+/* 버튼 그룹 (가로 배치) */
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* 기본 버튼 스타일 */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+/* "아뇨.." / "취소" 버튼 */
+.cancelButton {
+  background-color: #ffcdd2; /* 연한 핑크톤 */
+  color: #5d4037;
+}
+.cancelButton:hover {
+  background-color: #ef9a9a; /* hover 시 좀 더 진하게 */
+}
+
+/* "네!!" / "생성 시작!" 버튼 */
+.confirmButton,
+.submitButton {
+  background-color: #ffe0b2; /* 살구톤 */
+  color: #5d4037;
+}
+.confirmButton:hover,
+.submitButton:hover {
+  background-color: #ffcc80; /* hover 시 좀 더 진하게 */
+}
+
+/* 문항별 행 */
+.promptRow {
+  width: 100%;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* 문항 라벨 */
+.questionLabel {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #4e342e;
+}
+
+/* 드롭다운 스타일 */
+.selectBox {
+  width: 100%;
+  background-color: #ffffff;
+  color: #333333;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #d7ccc8; /* 살짝 베이지톤 border */
+  font-size: 1rem;
+}
+
+/* 로딩 텍스트 (필요 시 사용) */
+.loadingText {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #5d4037;
+}
+
+/* 로딩 애니메이션 */
+.loadingAnimation {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ffe0b2; /* 살구톤 */
+  border-top: 4px solid #ffcc80; /* 조금 더 진한 살구 */
+  border-radius: 50%;
+  margin: 1rem auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

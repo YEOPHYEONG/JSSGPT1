@@ -18,7 +18,7 @@ const CoverLetterList = () => {
   const fetchCoverLetters = async () => {
     try {
         const response = await axios.get(
-            '/cover-letter/list/',
+            '/api/cover-letter/list/',
             { withCredentials: true }
         );
       setCoverLetters(response.data);

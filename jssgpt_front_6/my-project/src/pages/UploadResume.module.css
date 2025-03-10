@@ -1,58 +1,57 @@
 /* src/pages/UploadResume.module.css */
 .container {
-    background-color: #323232;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    padding: 1rem;
-  }
-  
-  .title {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .uploadLabel {
-    background-color: #678f83;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    color: #ffffff;
-    font-weight: bold;
-  }
-  
-  .fileInput {
-    display: none;
-  }
-  
-  .uploadButton {
-    background-color: #678f83;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #ffffff;
-    font-size: 1rem;
-    margin-top: 1rem;
-    transition: opacity 0.2s ease;
-  }
-  
-  .uploadButton:hover {
-    opacity: 0.9;
-  }
-  
-  .error {
-    color: #ff6b6b;
-    margin-bottom: 1rem;
-  }
-  
+  background-color: #323232;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.uploadLabel {
+  background-color: #678f83;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadButton {
+  background-color: #678f83;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: opacity 0.2s ease;
+}
+
+.uploadButton:hover {
+  opacity: 0.9;
+}
+
+.error {
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+}

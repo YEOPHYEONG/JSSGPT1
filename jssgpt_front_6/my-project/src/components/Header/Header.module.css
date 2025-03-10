@@ -1,61 +1,86 @@
-/* src/components/Header/Header.module.css */
 .header {
-    width: 100%;
-    background-color: #678f83; /* 객체 색상 */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    height: 60px;
-    box-sizing: border-box;
-  }
-  
-  .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    user-select: none;
-  }
-  
-  .profileArea {
-    position: relative;
-  }
-  
-  .profileButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .profileIcon {
-    width: 30px;
-    height: 30px;
-  }
-  
-  /* 드롭다운 메뉴 */
-  .dropdownMenu {
-    position: absolute;
-    top: 60px;
-    right: 0;
-    background-color: #678f83;
-    border: 1px solid #ffffff;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    z-index: 10;
-  }
-  
-  .email {
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-  
-  .menuItem {
-    background: none;
-    border: none;
-    color: #ffffff;
-    text-align: left;
-    padding: 5px 0;
-    cursor: pointer;
-  }
-  
+  width: 100%;
+  height: 80px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+  background: #DD9570;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  font-family: 'Pretendard', sans-serif;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1f2937;
+  cursor: pointer;
+  user-select: none;
+}
+
+.profileArea {
+  position: relative;
+}
+
+.profileButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.profileButton:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+
+.profileIcon {
+  width: 40px;
+  height: 40px;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 70px;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.email {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #1f2937;
+}
+
+.menuItem {
+  background: none;
+  border: none;
+  color: #374151;
+  text-align: left;
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.menuItem:hover {
+  color: #1f2937;
+}
+
+.loginPrompt {
+  font-size: 0.9rem;
+  color: #374151;
+}

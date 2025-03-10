@@ -1,15 +1,24 @@
 /* src/pages/CoverLetterList.module.css */
 
+body {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+}
+
 .container {
-    background-color: #323232;
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;  
+  background-color: #ffffff;
     min-height: 100vh;
     padding: 1rem;
     color: #ffffff;
   }
   
   .pageTitle {
-    font-size: 2rem;
+    font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+    font-size: 2.5rem;
+    font-weight: bold;
     margin-bottom: 1rem;
+    color: #000000;
+    text-shadow: 1px 4px 10px #00000075;
   }
   
   .error {
@@ -26,12 +35,13 @@
   
   /* 개별 카드 */
   .card {
-    background-color: #678f83;
-    border: 1px solid #ffffff;
+    background-color: #0056b3;
+    border: 2px solid #817c7c;
     border-radius: 8px;
     padding: 1rem;
     cursor: pointer;
     transition: opacity 0.2s ease;
+    box-shadow: 0 2px 5px #000000;
   }
   
   .card:hover {
@@ -40,20 +50,25 @@
   
   /* 카드 상단: 기업명과 마지막 작성일 */
   .cardHeader {
+    font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
+    text-shadow: 1px 2px 5px #000000
   }
   
   .companyName {
-    font-size: 1.2rem;
+    font-size: 2rem;
     font-weight: bold;
+    color:rgb(255, 255, 255)
   }
   
   .updatedAt {
-    font-size: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 700;
     opacity: 0.8;
+    color:#ffffff
   }
   
   /* 카드 하단 */
@@ -62,13 +77,17 @@
   }
   
   .recruitJob {
-    font-size: 1rem;
+    font-size: 1.5rem;
     margin-bottom: 0.5rem;
     font-weight: 500;
+    color:#f2ff65;
+    text-shadow: 0 1px 5px #0000008f
   }
   
   .essayQuestion {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     margin-bottom: 0.25rem;
+    color:#f0f0f0;
+    text-shadow: 0 1px 5px #0000008f
   }
   

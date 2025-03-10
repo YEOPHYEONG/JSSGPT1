@@ -1,4 +1,3 @@
-// src/components/Header/Header.jsx
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -25,7 +24,7 @@ function Header({ onLogoClick }) {
   const handleLogout = async () => {
     try {
       const csrfToken = getCookie('csrftoken');
-      const response = await fetch('/auth/logout/', {
+      const response = await fetch('/api/auth/logout/', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -42,14 +41,14 @@ function Header({ onLogoClick }) {
       console.error("Logout error:", error);
     }
   };
-  
+
   return (
     <header className={styles.header}>
       <div className={styles.logo} onClick={handleLogoClick}>
-        <img 
-          src="/assets/new-logo.svg" 
-          alt="JSSGPT" 
-          className={styles.logoImage} 
+        <img
+          src="/assets/new-logo.svg"
+          alt="JSSGPT"
+          className={styles.logoImage}
         />
       </div>
       <div className={styles.profileArea}>
@@ -58,10 +57,10 @@ function Header({ onLogoClick }) {
           className={styles.profileButton}
           onClick={toggleProfileMenu}
         >
-          <img 
-            src="/assets/new-profile-icon.png" 
-            alt="New Profile Icon" 
-            className={styles.profileIcon} 
+          <img
+            src="/assets/new-profile-icon.png"
+            alt="New Profile Icon"
+            className={styles.profileIcon}
           />
         </button>
         {isProfileOpen && (
@@ -69,15 +68,13 @@ function Header({ onLogoClick }) {
             {user ? (
               <>
                 <div className={styles.email}>{user.email}</div>
-                {/* "내 자기소개서 관리" 버튼 -> /cover-letter */}
-                <button 
-                  className={styles.menuItem} 
+                <button
+                  className={styles.menuItem}
                   onClick={() => navigate('/cover-letter')}
                 >
                   내 자기소개서 관리
                 </button>
-                {/* "내 경험관리" 버튼 -> /experience-edit */}
-                <button 
+                <button
                   className={styles.menuItem}
                   onClick={() => navigate('/experience-edit')}
                 >
@@ -88,7 +85,7 @@ function Header({ onLogoClick }) {
                 </button>
               </>
             ) : (
-              <div 
+              <div
                 className={styles.loginPrompt}
                 onClick={() => navigate('/login')}
                 style={{ cursor: 'pointer' }}

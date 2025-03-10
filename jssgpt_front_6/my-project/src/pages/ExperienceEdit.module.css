@@ -1,11 +1,16 @@
 /* src/pages/ExperienceEdit.module.css */
 
+body {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+}
+
+
 /* 전체 컨테이너 */
 .container {
-    background-color: #323232;
+    background-color: #ffffff;
     min-height: 100vh;
     padding: 1rem;
-    color: #ffffff;
+    color: #e0e0e0;
   }
   
   /* 상단 헤더바 (제목 + 버튼) */
@@ -20,21 +25,27 @@
     font-size: 2rem;
     margin-bottom: 1rem;
     margin-top: 0;
+    color:#000000;
+    text-shadow: 1px 2px 7px #00000059;
   }
   
   /* '경험 추가하기' 버튼 */
   .addButton {
-    background-color: #678f83;
-    border: none;
+    font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+    font-weight: 800;
+    background-color: #DD9570;
+    border: 1.5px solid #0a357658;
     color: #ffffff;
-    padding: 0.5rem 1rem;
+    padding: 0.7rem 1.2rem;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
     margin-bottom: 1rem;
+    text-shadow: 1px 1px 2px #000000;
   }
   
   .addButton:hover {
+    background-color: #437dd4;
     opacity: 0.9;
   }
   
@@ -46,6 +57,7 @@
   
   /* 드롭다운 메뉴 */
   .dropdown {
+    font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
     margin-bottom: 1rem;
     padding: 0.5rem;
     font-size: 1rem;
@@ -53,15 +65,16 @@
   
   /* STAR 경험 전체 컨테이너 */
   .starContainer {
-    background-color: #678f83;
+    background-color: #DD9570;
     border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 1px 2px 8px #000000;
   }
   
   /* 상황, 과업, 행동, 결과 각각의 항목 */
   .starItem {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
@@ -70,29 +83,55 @@
   /* 항목의 라벨(예: 상황, 과업, 행동, 결과) */
   .starLabel {
     display: inline-block;
-    width: 60px;
+    width: 80px;
     font-weight: bold;
+    font-size: 1.2rem;
     margin-right: 1rem;
-    color: #ffffff;
+    color: #e0e0e0;
+    text-shadow: 1px 1px 4px #00000086;
   }
   
   /* 수정 가능한 텍스트/입력 */
   .starInput {
+    font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
     flex: 1;
-    background-color: #ffffff;
-    color: #000000;
-    border: none;
-    padding: 0.5rem;
+    background-color: #eeeeee;
+    color: #222222;
+    border: 2.5px solid #969494;
+    padding: 0.6rem;
     margin-left: 0.5rem;
-    border-radius: 4px;
+    border-radius: 6px;
     resize: vertical;
+    min-height: 60px;
+  
   }
   
+.starInput:focus {
+    outline: none;
+    border-color: #34d399;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+  }
+
+  .starInput::placeholder {
+    color: #999;
+    font-style: italic;
+  }
+
+  .buttonContainer {
+    display: flex;
+    justify-content: center;  /* 중앙 정렬 */
+    align-items: center;  /* 버튼 높이 맞추기 */
+    gap: 10px; /* 버튼 사이 간격 */
+  }
+  
+
   /* 저장 버튼 */
-  .saveButton {
-    width: 90%;
-    margin: 0 auto; /* 컨테이너 내 가로 중앙 정렬 */
-    display: block;
+  .saveButton, .deleteButton {
+    font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+    font-weight: 600;
+    display: inline-block;
     background-color: rgba(0, 0, 0, 0.4); /* 검은색, 투명도 40% */
     border: none;
     color: #ffffff;
@@ -100,9 +139,59 @@
     border-radius: 10px;
     cursor: pointer;
     margin-top: 0.5rem;
+    border: 1.5px solid #185ee834;
+    text-shadow: 1px 2px 2px #000000
   }
   
   .saveButton:hover {
+    background-color: #4caf50;
     opacity: 0.9;
   }
   
+  
+
+.deleteButton:hover {
+  background-color: #ff4c4c;
+  opacity: 0.9;
+}
+
+ /* ✅ 삭제된 경험 복원 UI 개선 */
+ .restoreContainer {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  margin-top: 20px;
+  padding: 15px;
+  background: #3b82f6; /* 파란색 배경으로 변경 */
+  border-radius: 8px;
+  color: #ffffff;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.deletedExperience {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #ffffff;
+  color: #000000;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.restoreButton {
+  margin: auto;
+  background-color: #ffcc00;
+  color: black;
+  font-weight: bold;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.restoreButton:hover {
+  background-color: #ffaa00;
+}
+
