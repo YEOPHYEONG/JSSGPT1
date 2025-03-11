@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header/Header';
+import Footer from '../components/Footer/Footer';
 import styles from './UploadResume.module.css';
 import { getCookie } from '../utils/utils';  // CSRF 토큰을 가져오기 위한 유틸 함수
 
@@ -60,25 +62,37 @@ const UploadResume = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>이력서 업로드</h1>
-      {error && <p className={styles.error}>{error}</p>}
-      <form onSubmit={handleUpload} className={styles.form}>
-        <label htmlFor="resume-upload" className={styles.uploadLabel}>
-          이력서 업로드
-        </label>
-        <input
-          id="resume-upload"
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-          className={styles.fileInput}
-        />
-        <button type="submit" className={styles.uploadButton}>
-          업로드
-        </button>
-      </form>
-    </div>
+    <>
+      {/* 상단 헤더 추가 */}
+      <Header />
+
+      <div className={styles.container}>
+        <h1 className={styles.title}>이력서 업로드</h1>
+        {error && <p className={styles.error}>{error}</p>}
+        <form onSubmit={handleUpload} className={styles.form}>
+          <label htmlFor="resume-upload" className={styles.uploadLabel}>
+            이력서 업로드
+          </label>
+          <input
+            id="resume-upload"
+            type="file"
+            accept="application/pdf"
+            onChange={handleFileChange}
+            className={styles.fileInput}
+          />
+          {/* 파일 선택 시 파일명을 표시 */}
+          {selectedFile && (
+            <p className={styles.fileName}>선택된 파일: {selectedFile.name}</p>
+          )}
+          <button type="submit" className={styles.uploadButton}>
+            업로드
+          </button>
+        </form>
+      </div>
+
+      {/* 하단 푸터 추가 */}
+      <Footer />
+    </>
   );
 };
 
