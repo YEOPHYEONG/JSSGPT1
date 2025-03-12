@@ -153,14 +153,19 @@ async def integrated_crawler(target_date):
                             "jobs": []
                         })
                     else:
-                        # 모달 방식 처리
-                        await item.click()
+                        # 모달 방식 처리: 클릭 시 에러 발생하면 해당 항목 스킵
+                        try:
+                            await item.click()
+                        except Exception as e:
+                            logger.debug("모달 열기 클릭 실패 - 해당 채용공고 스킵: %s", e)
+                            continue
+
                         try:
                             await page.wait_for_selector("div.employment-company-group-modal-background", timeout=10000)
                         except Exception as e:
                             logger.debug("모달이 나타나지 않음: %s", e)
                             continue
-                        # 모달 내부의 데이터가 완전히 로드될 때까지 잠시 대기
+
                         await page.wait_for_timeout(1000)
                         modal = await page.query_selector("div.employment-company-group-modal-background")
                         if not modal:
@@ -168,6 +173,7 @@ async def integrated_crawler(target_date):
                             continue
                         company_name_elem = await modal.query_selector("div.employment-group-title__content")
                         modal_company_name = await company_name_elem.inner_text() if company_name_elem else "N/A"
+
                         job_postings = await modal.query_selector_all("div.employment-group-item.ng-scope")
                         for job in job_postings:
                             job_start_date = await job.get_attribute("day")
@@ -175,6 +181,7 @@ async def integrated_crawler(target_date):
                             link_modal_elem = await job.query_selector("a.employment-company-anchor")
                             modal_href = await link_modal_elem.get_attribute("href") if link_modal_elem else None
                             job_link = "https://jasoseol.com" + modal_href if modal_href and modal_href.startswith("/") else modal_href
+
                             companies.append({
                                 "start_date": job_start_date,
                                 "end_date": None,
@@ -183,7 +190,6 @@ async def integrated_crawler(target_date):
                                 "company_name": modal_company_name,
                                 "jobs": []
                             })
-                        # (선택 사항) 모달 닫기: 모달 닫기 버튼이 있으면 클릭
                         try:
                             close_button = await page.query_selector("button.modal-close")
                             if close_button:
@@ -192,7 +198,7 @@ async def integrated_crawler(target_date):
                             logger.debug("모달 닫기 실패: %s", e)
         logger.debug("메인 페이지 크롤링 결과: %s", companies)
 
-        # 상세 페이지에서 추가 정보(종료일, 채용 사이트 링크, jobs) 추출
+        # 상세 페이지에서 추가 정보 추출
         for company in companies:
             logger.debug("디테일 크롤링 시작: %s - %s", company['company_name'], company['link'])
             try:
@@ -295,5 +301,4 @@ async def integrated_crawler(target_date):
 if __name__ == "__main__":
     target_date = input("크롤링할 날짜 (YYYYMMDD)를 입력하세요: ")
     companies_data = asyncio.run(integrated_crawler(target_date))
-    # 오직 순수 JSON 데이터만 stdout으로 출력
     print(json.dumps(companies_data))
