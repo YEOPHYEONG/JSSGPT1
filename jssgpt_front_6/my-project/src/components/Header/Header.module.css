@@ -25,6 +25,27 @@
 
 .profileArea {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 새 이력서 업로드 버튼 스타일 (네모 박스, 라운드 처리) */
+.uploadResumeButton {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 10px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.uploadResumeButton:hover {
+  background-color: #f0f0f0;
+  color: #1f2937;
 }
 
 .profileButton {

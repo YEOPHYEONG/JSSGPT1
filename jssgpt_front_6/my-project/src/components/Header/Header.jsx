@@ -52,6 +52,14 @@ function Header({ onLogoClick }) {
         />
       </div>
       <div className={styles.profileArea}>
+        {/* 이력서 업로드 버튼 추가 (프로필 아이콘 왼쪽) */}
+        <button
+          type="button"
+          className={styles.uploadResumeButton}
+          onClick={() => navigate('/upload-resume')}
+        >
+          이력서 업로드
+        </button>
         <button
           type="button"
           className={styles.profileButton}

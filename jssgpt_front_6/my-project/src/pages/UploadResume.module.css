@@ -68,3 +68,40 @@
   margin-bottom: 1rem;
   text-align: center;
 }
+
+/* 로딩 상태를 위한 스타일 추가 */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(101, 89, 89, 0.527);
+  border-top-color: #000000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #000000;
+  margin-top: 20px;
+}
