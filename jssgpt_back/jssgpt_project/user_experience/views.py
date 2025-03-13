@@ -75,7 +75,8 @@ def upload_resume(request):
 
                 # OpenAI API 호출 시 예외 처리 및 추가 로깅
                 try:
-                    logger.debug(f"Received response from OpenAI: start")
+                    # logger.debug(f"Received response from OpenAI: start")
+                    logger.debug(f"OPENAI_API_KEY:", os.environ.get("OPENAI_API_KEY"))
                     response_text = llm.predict(prompt)
                     logger.debug(f"Received response from OpenAI: {response_text}")
                 except Exception as api_error:
