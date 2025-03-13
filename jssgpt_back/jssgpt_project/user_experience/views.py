@@ -79,6 +79,7 @@ def upload_resume(request):
                     response_text = llm.predict(prompt)
                     logger.debug(f"Received response from OpenAI: {response_text}")
                 except Exception as api_error:
+                    logger.debug(f"Received response from OpenAI: *********************************")
                     logger.error(f"OpenAI API call error: {api_error}. Prompt was: {prompt}")
                     return JsonResponse({
                         'error': 'OpenAI API call failed. Please try again later.'
