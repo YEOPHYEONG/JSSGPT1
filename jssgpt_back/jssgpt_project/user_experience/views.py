@@ -72,6 +72,7 @@ def upload_resume(request):
                 
                 # OpenAI API 호출 전 추가 로깅
                 logger.debug(f"Sending prompt to OpenAI: {prompt}")
+                logger.debug(f"OPENAI_API_KEY:**** {os.environ.get("OPENAI_API_KEY")} *****")
 
                 # OpenAI API 호출 시 예외 처리 및 추가 로깅
                 try:
