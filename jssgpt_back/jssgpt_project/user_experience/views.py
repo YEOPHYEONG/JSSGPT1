@@ -4,15 +4,13 @@ import pdfplumber
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from dotenv import load_dotenv  # 추가
-from langchain_community.chat_models import ChatOpenAI  # 1번 코드와 동일하게 사용한다고 가정
-# 또는 from langchain_openai import OpenAI
+from langchain_community.chat_models import ChatOpenAI  # 또는 from langchain_openai import ChatOpenAI
 from django.contrib.auth.decorators import login_required
 import logging
 
 from .models import RawExperience, STARExperience
 from .forms import ResumeUploadForm
-from .utils import calculate_similarity
-from .utils import parse_openai_response
+from .utils import calculate_similarity, parse_openai_response
 
 # 로깅 설정
 logger = logging.getLogger('django')
@@ -21,8 +19,7 @@ logger = logging.getLogger('django')
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
-# (ChatOpenAI를 쓴다면) LLM 인스턴스 생성
-# model, temperature는 1번 코드와 동일하게 조정 가능합니다.
+# LLM 인스턴스 생성 (ChatOpenAI 사용)
 llm = ChatOpenAI(
     model="gpt-4", 
     temperature=0, 
@@ -73,9 +70,15 @@ def upload_resume(request):
                 텍스트: {extracted_text}
                 """
                 
-                # LangChain의 predict() 사용
-                response_text = llm.predict(prompt)
-
+                # OpenAI API 호출 시 예외 처리
+                try:
+                    response_text = llm.predict(prompt)
+                except Exception as api_error:
+                    logger.error(f"OpenAI API call error: {api_error}")
+                    return JsonResponse({
+                        'error': 'OpenAI API call failed. Please try again later.'
+                    }, status=500)
+                    
                 # OpenAI 응답 로깅
                 logger.debug(f"OpenAI Response: {response_text}")
 
@@ -129,12 +132,10 @@ def upload_resume(request):
                     'message': 'Resume uploaded and STAR experiences processed successfully.'
                 })
             except Exception as e:
-                # 에러 처리 및 로깅
                 logger.error(f"Error during resume processing: {str(e)}")
                 return JsonResponse({
                     'error': 'An error occurred during resume processing.'
                 }, status=500)
-
     else:
         form = ResumeUploadForm()
 
@@ -166,9 +167,7 @@ def create_star_experience(request):
     """
     if request.method == 'POST':
         try:
-            # user에 해당하는 RawExperience 가져오기 (없으면 생성)
             raw_experience, _ = RawExperience.objects.get_or_create(user=request.user)
-
             data = json.loads(request.body)  # { title, situation, task, action, result }
             exp = STARExperience.objects.create(
                 user=request.user,
@@ -201,20 +200,16 @@ def update_star_experience(request, star_id):
         try:
             data = json.loads(request.body)
             exp = STARExperience.objects.get(id=star_id, user=request.user)
-
             exp.title = data.get('title', exp.title)
             exp.situation = data.get('situation', exp.situation)
             exp.task = data.get('task', exp.task)
             exp.action = data.get('action', exp.action)
             exp.result = data.get('result', exp.result)
             exp.save()
-
             return JsonResponse({'message': 'STARExperience updated successfully.'})
         except STARExperience.DoesNotExist:
             return JsonResponse({'error': 'STARExperience not found.'}, status=404)
         except Exception as e:
             logger.error(f"Error updating STARExperience: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
-
     return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
-
