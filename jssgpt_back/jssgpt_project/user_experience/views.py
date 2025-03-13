@@ -70,18 +70,19 @@ def upload_resume(request):
                 텍스트: {extracted_text}
                 """
                 
-                # OpenAI API 호출 시 예외 처리
+                # OpenAI API 호출 전 추가 로깅
+                logger.debug(f"Sending prompt to OpenAI: {prompt}")
+
+                # OpenAI API 호출 시 예외 처리 및 추가 로깅
                 try:
                     response_text = llm.predict(prompt)
+                    logger.debug(f"Received response from OpenAI: {response_text}")
                 except Exception as api_error:
-                    logger.error(f"OpenAI API call error: {api_error}")
+                    logger.error(f"OpenAI API call error: {api_error}. Prompt was: {prompt}")
                     return JsonResponse({
                         'error': 'OpenAI API call failed. Please try again later.'
                     }, status=500)
                     
-                # OpenAI 응답 로깅
-                logger.debug(f"OpenAI Response: {response_text}")
-
                 # Step 4: OpenAI 응답 파싱
                 try:
                     star_data = parse_openai_response(response_text)
