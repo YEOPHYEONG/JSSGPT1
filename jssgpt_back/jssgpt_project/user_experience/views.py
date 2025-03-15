@@ -3,14 +3,14 @@ import json
 import pdfplumber
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from dotenv import load_dotenv  # 추가
-from langchain_community.chat_models import ChatOpenAI  # 또는 from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+from langchain_community.chat_models import ChatOpenAI
 from django.contrib.auth.decorators import login_required
 import logging
 
 from .models import RawExperience, STARExperience
 from .forms import ResumeUploadForm
-from .utils import calculate_similarity, parse_openai_response
+from .utils import calculate_similarity
 
 # 로깅 설정
 logger = logging.getLogger('django')
@@ -21,10 +21,45 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # LLM 인스턴스 생성 (ChatOpenAI 사용)
 llm = ChatOpenAI(
-    model="gpt-4o-mini", 
-    temperature=0, 
+    model="gpt-4o-mini",
+    temperature=0,
     openai_api_key=openai_api_key
 )
+
+def parse_openai_response(response):
+    """
+    OpenAI 응답을 JSON 형태로 파싱합니다.
+    JSON 형식이 아닐 경우, 텍스트를 파싱하여 딕셔너리 리스트로 변환.
+    """
+    # 응답에서 불필요한 태그 제거
+    cleaned_response = response.strip().replace("```json", "").replace("```", "")
+    
+    try:
+        # JSON 파싱 시도
+        parsed_data = json.loads(cleaned_response)
+        logger.debug(f"Successfully parsed JSON: {parsed_data}")
+        return parsed_data
+    except json.JSONDecodeError as e:
+        logger.warning(f"OpenAI Response is not valid JSON: {e}. Attempting to parse manually.")
+        # 수동 파싱 로직 (배열 처리 가능하도록 개선)
+        parsed_data = []
+        current_item = {}
+        lines = cleaned_response.split("\n")
+        for line in lines:
+            line = line.strip()
+            if line.startswith("{"):
+                current_item = {}
+            elif line.startswith("}"):
+                if current_item:
+                    parsed_data.append(current_item)
+                    current_item = {}
+            elif ":" in line:
+                key, value = line.split(":", 1)
+                current_item[key.strip().strip('"')] = value.strip().strip('",')
+        if current_item:  # 마지막 항목 추가
+            parsed_data.append(current_item)
+        logger.debug(f"Manually parsed data: {parsed_data}")
+        return parsed_data
 
 @login_required
 def upload_resume(request):
@@ -67,34 +102,29 @@ def upload_resume(request):
                 - action: 과제를 해결하기위해서 당사자가 수행한 행동을 1~2 문장으로 정리
                 - result: 경험의 결과을 1 문장으로 정리
                 단, 경험의 상황, 해결해야 할 과제, 수행한 행동, 결과 중 정확히 파악할 수 없는 내용은 '경험을 입력해주세요'로 반환해야해.
-                JSON 외의 응답을 포함하지 말고, 순수 JSON으로면 반환해줘.
-
+                JSON 외의 응답을 포함하지 말고, 순수 JSON으로만 반환해줘.
                 """
                 
-                # OpenAI API 호출 전 추가 로깅
-                # logger.debug(f"Sending prompt to OpenAI: {prompt}")
-
-                # OpenAI API 호출 시 예외 처리 및 추가 로깅
+                # OpenAI API 호출
                 try:
-                    logger.debug(f"Received response from OpenAI: start")
-                    logger.debug(f"Loaded OpenAI API Key: {openai_api_key}")
+                    logger.debug("Received response from OpenAI: start")
                     response_text = llm.predict(prompt)
                     logger.debug(f"Received response from OpenAI: {response_text}")
                 except Exception as api_error:
-                    logger.debug(f"OpenAI API call error: {api_error}. Prompt was: {prompt}")
-                    logger.error(f"OpenAI API call error: {api_error}. Prompt was: {prompt}")
+                    logger.error(f"OpenAI API call error: {api_error}")
                     return JsonResponse({
                         'error': 'OpenAI API call failed. Please try again later.'
                     }, status=500)
 
                 # Step 4: OpenAI 응답 파싱
                 try:
-                    logger.debug(f"Received response from OpenAI: parsing***")
+                    logger.debug("Received response from OpenAI: parsing***")
                     star_data = parse_openai_response(response_text)
-                except json.JSONDecodeError as e:
-                    logger.error(f"JSON Decode Error: {e}")
+                    logger.debug(f"Parsed STAR Data: {star_data}")
+                except Exception as e:
+                    logger.error(f"Error parsing OpenAI response: {e}")
                     return JsonResponse({
-                        'error': 'Failed to parse JSON from OpenAI response.'
+                        'error': 'Failed to parse response from OpenAI.'
                     }, status=500)
 
                 # STAR 데이터 각각 처리
@@ -106,7 +136,7 @@ def upload_resume(request):
                     is_updated = False
                     for existing_star in existing_stars:
                         similarity = calculate_similarity(
-                            existing_star.situation, 
+                            existing_star.situation,
                             item.get('situation', "")
                         )
                         if similarity >= 0.7:
@@ -174,7 +204,7 @@ def create_star_experience(request):
     if request.method == 'POST':
         try:
             raw_experience, _ = RawExperience.objects.get_or_create(user=request.user)
-            data = json.loads(request.body)  # { title, situation, task, action, result }
+            data = json.loads(request.body)
             exp = STARExperience.objects.create(
                 user=request.user,
                 raw_experience=raw_experience,
