@@ -89,6 +89,68 @@ async def ensure_logged_in(playwright):
     logger.debug("로그인 세션 저장 완료.")
     await browser.close()
 
+async def extract_modal_data(page, calendar_item):
+    """
+    모달을 열고 데이터를 추출하는 함수.
+    """
+    try:
+        # 링크가 없는 경우 클릭하여 모달 열기
+        if not await calendar_item.query_selector("a.company"):
+            logger.info("No link found, opening modal")
+            element = calendar_item.locator(".employment-group-item").first
+            await element.scroll_into_view_if_needed()
+            await element.click()
+            await page.wait_for_selector(".employment-company-group-modal.in", state="visible", timeout=10000)
+            await page.wait_for_load_state("networkidle")
+            logger.info("Modal opened")
+
+            # 모달 내 데이터 추출
+            modal = await page.query_selector(".employment-company-group-modal")
+            company_name = await modal.query_selector(".employment-group-title__content").inner_text()
+            items = await modal.query_selector_all(".employment-group-item.ng-scope")
+            employments = []
+
+            for item in items:
+                employment = {
+                    "employment_id": await item.get_attribute("employment_id"),
+                    "start_date": await item.get_attribute("day"),
+                    "end_date": await item.query_selector(".employment-group-item__end-time").inner_text() if await item.query_selector(".employment-group-item__end-time") else None,
+                    "link": f"https://jasoseol.com{await item.query_selector('a.employment-company-anchor').get_attribute('href')}",
+                    "company_name": company_name,
+                    "jobs": []
+                }
+                employments.append(employment)
+
+            # 모달 닫기
+            close_button = await page.query_selector("button.modal-close-btn")
+            if close_button:
+                await close_button.click()
+                await page.wait_for_selector(".employment-company-group-modal", state="hidden", timeout=5000)
+            else:
+                logger.warning("Modal close button not found, skipping close action")
+            return employments
+        else:
+            # 링크가 있는 경우 직접 처리
+            start_date = await calendar_item.get_attribute("day")
+            employment_id = await calendar_item.get_attribute("employment_id")
+            link_elem = await calendar_item.query_selector("a.company")
+            href = await link_elem.get_attribute("href")
+            link = "https://jasoseol.com" + href if href.startswith("/") else href
+            company_elem = await calendar_item.query_selector("div.company-name span")
+            company_name = await company_elem.inner_text() if company_elem else "N/A"
+            return [{
+                "start_date": start_date,
+                "end_date": None,
+                "employment_id": employment_id,
+                "link": link,
+                "company_name": company_name,
+                "jobs": []
+            }]
+    except Exception as e:
+        logger.error(f"Error in modal extraction: {str(e)}")
+        await page.screenshot(path="error_screenshot_modal_fail.png")
+        return []
+
 async def integrated_crawler(target_date):
     """
     target_date: 크롤링할 날짜 (YYYYMMDD 문자열)
@@ -134,69 +196,8 @@ async def integrated_crawler(target_date):
             if label_elem:
                 label_text = (await label_elem.inner_text()).strip()
                 if label_text == "시":
-                    start_date = await item.get_attribute("day")
-                    employment_id = await item.get_attribute("employment_id")
-                    link_elem = await item.query_selector("a.company")
-                    href = await link_elem.get_attribute("href") if link_elem else None
-
-                    if href:
-                        # 일반 링크 방식
-                        link = "https://jasoseol.com" + href if href.startswith("/") else href
-                        company_elem = await item.query_selector("div.company-name span")
-                        company_name = await company_elem.inner_text() if company_elem else "N/A"
-                        companies.append({
-                            "start_date": start_date,
-                            "end_date": None,
-                            "employment_id": employment_id,
-                            "link": link,
-                            "company_name": company_name,
-                            "jobs": []
-                        })
-                    else:
-                        # 모달 방식 처리: 클릭 시 에러 발생하면 해당 항목 스킵
-                        try:
-                            await item.click()
-                        except Exception as e:
-                            logger.debug("모달 열기 클릭 실패 - 해당 채용공고 스킵: %s", e)
-                            continue
-
-                        try:
-                            await page.wait_for_selector("div.employment-company-group-modal-background", timeout=10000)
-                        except Exception as e:
-                            logger.debug("모달이 나타나지 않음: %s", e)
-                            continue
-
-                        await page.wait_for_timeout(1000)
-                        modal = await page.query_selector("div.employment-company-group-modal-background")
-                        if not modal:
-                            logger.debug("모달 요소를 찾을 수 없습니다.")
-                            continue
-                        company_name_elem = await modal.query_selector("div.employment-group-title__content")
-                        modal_company_name = await company_name_elem.inner_text() if company_name_elem else "N/A"
-
-                        job_postings = await modal.query_selector_all("div.employment-group-item.ng-scope")
-                        for job in job_postings:
-                            job_start_date = await job.get_attribute("day")
-                            job_employment_id = await job.get_attribute("employment_id")
-                            link_modal_elem = await job.query_selector("a.employment-company-anchor")
-                            modal_href = await link_modal_elem.get_attribute("href") if link_modal_elem else None
-                            job_link = "https://jasoseol.com" + modal_href if modal_href and modal_href.startswith("/") else modal_href
-
-                            companies.append({
-                                "start_date": job_start_date,
-                                "end_date": None,
-                                "employment_id": job_employment_id,
-                                "link": job_link,
-                                "company_name": modal_company_name,
-                                "jobs": []
-                            })
-                        try:
-                            close_button = await page.query_selector("button.modal-close")
-                            if close_button:
-                                await close_button.click()
-                        except Exception as e:
-                            logger.debug("모달 닫기 실패: %s", e)
-        logger.debug("메인 페이지 크롤링 결과: %s", companies)
+                    modal_data = await extract_modal_data(page, item)
+                    companies.extend(modal_data)
 
         # 상세 페이지에서 추가 정보 추출
         for company in companies:
