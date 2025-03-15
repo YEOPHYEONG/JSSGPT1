@@ -85,6 +85,7 @@ def generate_and_save_company_info(company_name):
     - 현재 주요 이슈: 회사가 직면한 도전이나 업계의 이슈, 혹은 최신 뉴스.
 
     각 항목을 지원자가 자기소개서 작성 시 참고할 수 있도록 자세하고 명확하게 정리해줘.
+    단, json 형식으로 출력해줘.
     """
     response = llm.predict(prompt)
     print(f"[DEBUG] LangChain Response for Company: {response}")
@@ -116,6 +117,7 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
     - 필요 강점: 이 직무에서 두각을 나타내기 위해 요구되는 성향이나 강점들.
 
     위 정보를 정리할 때, 지원자가 자기소개서에 본인의 어떤 역량과 강점을 강조하면 좋을지도 함께 제안해줘.
+    단, json형식으로 출력해줘.
     """
     response = llm.predict(prompt)
     print(f"[DEBUG] LangChain Response for Job: {response}")
