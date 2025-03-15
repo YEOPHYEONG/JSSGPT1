@@ -113,7 +113,17 @@ def save_company_data(company_data):
     """
     try:
         start_date = parse_start_date(company_data.get("start_date"))
-        end_date = parse_end_date(company_data.get("end_date")) if company_data.get("end_date") else (start_date + datetime.timedelta(days=7) if start_date else None)
+        raw_end_date = company_data.get("end_date")
+        if raw_end_date:
+            parsed_end_date = parse_end_date(raw_end_date)
+            if parsed_end_date is None and start_date:
+                # 파싱 실패 시 start_date 기준 7일 후로 설정
+                end_date = start_date + datetime.timedelta(days=7)
+            else:
+                end_date = parsed_end_date
+        else:
+            end_date = start_date + datetime.timedelta(days=7) if start_date else None
+
         company_name = company_data.get("company_name")
         if not company_name:
             print("[ERROR] company_name이 없습니다.")
