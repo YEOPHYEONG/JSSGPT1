@@ -104,8 +104,8 @@ async def extract_modal_data(page, calendar_item):
         employment_items = await calendar_item.query_selector_all(".employment-group-item")
         if employment_items:
             for item in employment_items:
-                # 시각 표시 요소가 있는지 확인 (예: <div class="calendar-label start">시</div>)
-                label_elem = await calendar_item.query_selector("div.calendar-label.start")
+                # 각 employment item 내에서 시각 표시 요소를 개별적으로 확인합니다.
+                label_elem = await item.query_selector("div.calendar-label.start")
                 if label_elem:
                     label_text = (await label_elem.inner_text()).strip()
                     if label_text != "시":
