@@ -56,18 +56,12 @@ def upload_resume(request):
 
                 # Step 3: OpenAI GPT 호출
                 prompt = f"""
-                주어진 텍스트는 이력서에서 추출한 사용자의 경험이야.
-                텍스트의 개별 경험들을 STAR 구조 데이터로 만드는 것이 목표야.
-                텍스트를 분석하여 STAR 구조 데이터를 JSON 배열 형식으로 반환해줘.
-                각 항목은 다음 키를 포함해야 돼:
-                - title: 경험의 제목을 1 문장으로 명확하게 정리
-                - situation: 경험의 상황이 드러나도록 1~2 문장으로 명확하게 정리
-                - task: 경험의 상황에서 당사자가 해결해야 할 과제를 1~2 문장으로 명확하게 정리
-                - action: 과제를 해결하기위해서 당사자가 수행한 행동을 1~2 문장으로 정리
-                - result: 경험의 결과을 1 문장으로 정리
-                단, 경험의 상황, 해결해야 할 과제, 수행한 행동, 결과 중 정확히 파악할 수 없는 내용은 '경험을 입력해주세요'로 반환해야해.
-                JSON 외의 응답을 포함하지 말고, 순수 JSON으로면 반환해줘.
-                텍스트: {extracted_text}
+                title: 1
+                situation: 1
+                task: 1
+                action: 1
+                result: 1
+                을 출력해줘.
                 """
                 
                 # OpenAI API 호출 전 추가 로깅
@@ -76,6 +70,7 @@ def upload_resume(request):
                 # OpenAI API 호출 시 예외 처리 및 추가 로깅
                 try:
                     logger.debug(f"Received response from OpenAI: start")
+                    logger.debug(f"Loaded OpenAI API Key: {openai_api_key}")
                     response_text = llm.predict(prompt)
                     logger.debug(f"Received response from OpenAI: {response_text}")
                 except Exception as api_error:
@@ -87,6 +82,7 @@ def upload_resume(request):
 
                 # Step 4: OpenAI 응답 파싱
                 try:
+                    logger.debug(f"Received response from OpenAI: parsing***")
                     star_data = parse_openai_response(response_text)
                 except json.JSONDecodeError as e:
                     logger.error(f"JSON Decode Error: {e}")
