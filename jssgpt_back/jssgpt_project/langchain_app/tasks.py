@@ -20,7 +20,8 @@ def crawl_recruitments_task(target_date_str):
             async for company in integrated_crawler(target_date_str):
                 try:
                     from .utils_crawler import save_company_data
-                    save_company_data(company)
+                    # sync_to_async로 동기 함수를 비동기 호출
+                    await sync_to_async(save_company_data)(company)
                     logger.info(f"Saved data for {company.get('company_name')}")
                 except Exception as e:
                     logger.error(f"Error saving company {company.get('company_name')}: {e}", exc_info=True)
@@ -30,7 +31,7 @@ def crawl_recruitments_task(target_date_str):
     except Exception as e:
         logger.error(f"Error in Celery task: {e}", exc_info=True)
         return None
-
+    
 @shared_task
 def generate_company_info_task(company_id):
     try:

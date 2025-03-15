@@ -9,13 +9,15 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Company)
 def company_post_save(sender, instance, created, **kwargs):
-    if created or instance.industry in (None, "", "N/A"):
+    # 수정: industry가 None 또는 빈 문자열일 경우에만 태스크 호출
+    if created or instance.industry in (None, ""):
         transaction.on_commit(lambda: generate_company_info_task.delay(instance.id))
         logger.info("Enqueued company info task for Company id %s", instance.id)
 
 @receiver(post_save, sender=RecruitJob)
 def recruitjob_post_save(sender, instance, created, **kwargs):
-    if created or instance.description in (None, "", "N/A"):
+    # 수정: description이 None 또는 빈 문자열일 경우에만 태스크 호출
+    if created or instance.description in (None, ""):
         transaction.on_commit(lambda: generate_job_info_task.delay(instance.id))
         logger.info("Enqueued job info task for RecruitJob id %s", instance.id)
 
