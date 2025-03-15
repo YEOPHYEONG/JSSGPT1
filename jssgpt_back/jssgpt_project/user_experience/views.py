@@ -21,8 +21,8 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # LLM 인스턴스 생성 (ChatOpenAI 사용)
 llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    temperature=0,
+    model="gpt-4o-2024-11-20",
+    temperature=0.5,
     openai_api_key=openai_api_key
 )
 
@@ -97,9 +97,9 @@ def upload_resume(request):
                 텍스트를 분석하여 STAR 구조 데이터를 JSON 배열 형식으로 반환해줘.
                 각 항목은 다음 키를 포함해야 돼:
                 - title: 경험의 제목을 한 문장으로 명확하게 정리
-                - situation: 경험의 상황이 드러나도록 1~2 문장으로 명확하게 정리
-                - task: 경험의 상황에서 당사자가 해결해야 할 과제를 1~2 문장으로 명확하게 정리
-                - action: 과제를 해결하기위해서 당사자가 수행한 행동을 1~2 문장으로 정리
+                - situation: 경험의 상황이 드러나도록 세 문장으로 명확하게 정리
+                - task: 경험의 상황에서 당사자가 해결해야 할 과제를 세 문장으로 명확하게 정리
+                - action: 과제를 해결하기위해서 당사자가 수행한 행동을 세 문장으로 정리
                 - result: 경험의 결과을 1 문장으로 정리
                 단, 경험의 상황, 해결해야 할 과제, 수행한 행동, 결과 중 정확히 파악할 수 없는 내용은 '경험을 입력해주세요'로 반환해야해.
                 JSON 외의 응답을 포함하지 말고, 순수 JSON으로만 반환해줘.
