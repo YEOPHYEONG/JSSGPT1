@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 from celery import shared_task
+from asgiref.sync import sync_to_async  # 추가된 임포트
 from .models import Company, RecruitJob, CoverLetterPrompt
 from .utils import (
     generate_and_save_company_info,
