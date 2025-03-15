@@ -68,10 +68,10 @@ MIDDLEWARE = [
 
 # CORS 설정: 개발 서버와 함께 실제 서비스 도메인도 필요하다면 추가하세요.
 CORS_ALLOWED_ORIGINS = [
+    "https://jssgpt.com",     # 실제 서비스 (https)
     "http://localhost:3000",  # React 개발 서버
     "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "https://jssgpt.com",       # 실제 서비스 (https)
+    "http://127.0.0.1:5173"
 ]
 
 # 쿠키 기반 인증을 위해 자격증명(쿠키) 전송 허용

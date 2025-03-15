@@ -12,7 +12,7 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # OpenAI 설정
-llm = ChatOpenAI(model="gpt-4", temperature=0, openai_api_key=openai_api_key)
+llm = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=openai_api_key)
 
 def parse_response(response):
     """

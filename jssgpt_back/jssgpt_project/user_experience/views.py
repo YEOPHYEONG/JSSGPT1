@@ -21,7 +21,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # LLM 인스턴스 생성 (ChatOpenAI 사용)
 llm = ChatOpenAI(
-    model="gpt-4", 
+    model="gpt-4o-mini", 
     temperature=0, 
     openai_api_key=openai_api_key
 )
@@ -71,7 +71,7 @@ def upload_resume(request):
                 """
                 
                 # OpenAI API 호출 전 추가 로깅
-                logger.debug(f"Sending prompt to OpenAI: {prompt}")
+                # logger.debug(f"Sending prompt to OpenAI: {prompt}")
 
                 # OpenAI API 호출 시 예외 처리 및 추가 로깅
                 try:
@@ -79,6 +79,7 @@ def upload_resume(request):
                     response_text = llm.predict(prompt)
                     logger.debug(f"Received response from OpenAI: {response_text}")
                 except Exception as api_error:
+                    logger.debug(f"OpenAI API call error: {api_error}. Prompt was: {prompt}")
                     logger.error(f"OpenAI API call error: {api_error}. Prompt was: {prompt}")
                     return JsonResponse({
                         'error': 'OpenAI API call failed. Please try again later.'
