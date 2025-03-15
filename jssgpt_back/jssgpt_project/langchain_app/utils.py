@@ -22,53 +22,79 @@ def parse_response(response):
         return json.loads(response)
     except json.JSONDecodeError:
         return {}
-    
+
+def flatten_json(data):
+    """
+    중첩된 JSON 딕셔너리를 평탄화합니다.
+    예를 들어, {"직무 설명": {"역할": "A", "책임": "B"}}
+    를 {"직무 설명": "역할: A, 책임: B"} 형태로 변환합니다.
+    """
+    flattened = {}
+    for key, value in data.items():
+        if isinstance(value, dict):
+            inner_parts = [f"{subkey}: {subvalue}" for subkey, subvalue in value.items()]
+            flattened[key] = ", ".join(inner_parts)
+        else:
+            flattened[key] = value
+    return flattened
+
 def parse_company_info(response):
     """
-    LangChain 응답을 문자열에서 딕셔너리로 변환합니다.
-    숫자 및 구분자를 제거합니다.
+    LangChain 응답을 JSON으로 파싱하고 평탄화합니다.
+    JSON 파싱에 실패하면 기존 문자열 기반 파싱 로직을 사용합니다.
     """
-    parsed_response = {}
     try:
-        lines = response.split("\n")
-        for line in lines:
-            if ":" in line:
-                key, value = line.split(":", 1)
-                clean_key = key.lstrip("-* ").strip()
-                parsed_response[clean_key] = value.strip()
-    except Exception as e:
-        print(f"[ERROR] Failed to parse LangChain response: {e}")
-    return parsed_response
+        data = json.loads(response)
+        data = flatten_json(data)
+        return data
+    except json.JSONDecodeError:
+        # JSON 파싱 실패 시 기존 방식 사용
+        parsed_response = {}
+        try:
+            lines = response.split("\n")
+            for line in lines:
+                if ":" in line:
+                    key, value = line.split(":", 1)
+                    clean_key = key.lstrip("-* ").strip()
+                    parsed_response[clean_key] = value.strip()
+        except Exception as e:
+            print(f"[ERROR] Failed to parse LangChain response: {e}")
+        return parsed_response
 
 def parse_langchain_response(response):
     """
-    LangChain 응답을 문자열에서 딕셔너리로 변환합니다.
-    (키-값 및 목록 형태 처리 – 키 앞의 불필요한 서식 문자('-','*',공백 등)을 제거)
+    LangChain 응답을 JSON으로 파싱하고 평탄화합니다.
+    JSON 파싱에 실패하면 기존 문자열 기반 파싱 로직을 사용합니다.
     """
-    parsed_response = {}
-    current_key = None
-    current_value = []
     try:
-        lines = response.splitlines()
-        for line in lines:
-            line = line.strip()
-            if ":" in line and not line[0].isdigit():
-                if current_key and current_value:
-                    clean_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
-                    parsed_response[clean_key] = " ".join(current_value).strip()
-                current_key, value = line.split(":", 1)
-                current_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
-                current_value = [value.strip()]
-            elif line.startswith(("-", "*", "1.", "2.", "3.")):
-                current_value.append(line)
-            elif line:
-                current_value.append(line)
-        if current_key and current_value:
-            clean_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
-            parsed_response[clean_key] = " ".join(current_value).strip()
-    except Exception as e:
-        print(f"[ERROR] Failed to parse LangChain response: {e}")
-    return parsed_response
+        data = json.loads(response)
+        data = flatten_json(data)
+        return data
+    except json.JSONDecodeError:
+        parsed_response = {}
+        current_key = None
+        current_value = []
+        try:
+            lines = response.splitlines()
+            for line in lines:
+                line = line.strip()
+                if ":" in line and not line[0].isdigit():
+                    if current_key and current_value:
+                        clean_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
+                        parsed_response[clean_key] = " ".join(current_value).strip()
+                    current_key, value = line.split(":", 1)
+                    current_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
+                    current_value = [value.strip()]
+                elif line.startswith(("-", "*", "1.", "2.", "3.")):
+                    current_value.append(line)
+                elif line:
+                    current_value.append(line)
+            if current_key and current_value:
+                clean_key = re.sub(r'^[\-\*\s]+', '', current_key).strip()
+                parsed_response[clean_key] = " ".join(current_value).strip()
+        except Exception as e:
+            print(f"[ERROR] Failed to parse LangChain response: {e}")
+        return parsed_response
 
 def generate_and_save_company_info(company_name):
     """
