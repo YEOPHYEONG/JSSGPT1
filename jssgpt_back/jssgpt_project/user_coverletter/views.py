@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger('django')
 
 # OpenAI API 설정
-llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0)
+llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0.8)
 
 @login_required
 def create_cover_letter(request, recruit_job_id):
