@@ -99,7 +99,6 @@ async def extract_modal_data(page, calendar_item):
     """
     companies = []
     try:
-        # calendar_item 내부의 모든 기업 요소를 선택합니다.
         employment_items = await calendar_item.query_selector_all(".employment-group-item")
         if employment_items:
             for item in employment_items:
@@ -107,7 +106,7 @@ async def extract_modal_data(page, calendar_item):
                 if label_elem:
                     label_text = (await label_elem.inner_text()).strip()
                     if label_text != "시":
-                        continue  # '시'인 기업만 처리
+                        continue
                 link_elem = await item.query_selector("a.company")
                 if link_elem:
                     href = await link_elem.get_attribute("href")
@@ -190,7 +189,6 @@ async def integrated_crawler(target_date):
     """
     target_date: 크롤링할 날짜 (YYYYMMDD 문자열)
     로그인 상태가 저장된 state.json 파일을 이용해 크롤링을 진행합니다.
-    디버깅 로그를 통해 각 캘린더 아이템에서 탐지된 기업 수를 확인합니다.
     """
     async with async_playwright() as p:
         await ensure_logged_in(p)
@@ -238,7 +236,6 @@ async def integrated_crawler(target_date):
         all_companies = []
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
-            # a.company 요소들을 모두 찾고, 내부의 "div.calendar-label.start"가 "시"인지 확인합니다.
             company_links = await item.query_selector_all("a.company")
             for comp in company_links:
                 label_elem = await comp.query_selector("div.calendar-label.start")
@@ -266,19 +263,18 @@ async def integrated_crawler(target_date):
                 logger.debug("캘린더 아이템 #%s: a.company 방식으로 기업을 찾지 못함. 모달 방식으로 처리", idx+1)
                 companies_from_item = await extract_modal_data(page, item)
                 logger.debug("캘린더 아이템 #%s: 모달 방식으로 탐지된 기업 수 = %s", idx+1, len(companies_from_item))
-
             all_companies.extend(companies_from_item)
 
         logger.debug("메인 페이지에서 총 탐지된 기업 수 = %s", len(all_companies))
 
-        # 각 회사에 대해 상세 페이지에서 추가 정보 추출
+        # 각 회사에 대해 상세 정보 추출
         for company in all_companies:
             logger.debug("디테일 크롤링 시작: %s - %s", company['company_name'], company['link'])
-            # 각 기업마다 새로운 페이지를 생성하여 메모리 사용을 최적화합니다.
-            async with context.new_page() as detail_page:
-                # 동일한 불필요 리소스 차단 설정 적용
-                await detail_page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
+            try:
+                # detail_page를 새로 생성한 후, 작업 완료 시 close
+                detail_page = await context.new_page()
                 try:
+                    await detail_page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
                     await detail_page.goto(company["link"])
                     try:
                         await detail_page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
@@ -295,6 +291,7 @@ async def integrated_crawler(target_date):
                         logger.debug("광고 배너 강제 제거 실패: %s", e)
                 except Exception as e:
                     logger.debug("디테일 페이지 접속 오류: %s - %s", company['link'], e)
+                    await detail_page.close()
                     continue
 
                 try:
@@ -370,8 +367,12 @@ async def integrated_crawler(target_date):
                     })
                 company["jobs"] = jobs
                 logger.debug("디테일 크롤링 완료: %s", company['company_name'])
+                await detail_page.close()
+            except Exception as e:
+                logger.debug("디테일 페이지 처리 중 예외 발생: %s", e)
+                continue
+
         await browser.close()
-        # generator 형태로 yield한 회사 정보들을 최종적으로 리턴
         return all_companies
 
 if __name__ == "__main__":
