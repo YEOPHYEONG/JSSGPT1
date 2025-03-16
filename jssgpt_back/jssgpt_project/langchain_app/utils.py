@@ -12,7 +12,8 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # OpenAI 설정
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=openai_api_key)
+llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0, openai_api_key=openai_api_key)
+search_llm = ChatOpenAI(model="gpt-4o-search-preview-2025-03-11", temperature=0, openai_api_key=openai_api_key)
 
 def clean_json_response(response):
     """
@@ -133,7 +134,7 @@ def generate_and_save_company_info(company_name):
     각 항목을 지원자가 자기소개서 작성 시 참고할 수 있도록 자세하고 명확하게 정리해줘.
     단, json 형식으로 출력해줘.
     """
-    response = llm.predict(prompt)
+    response = search_llm.predict(prompt)
     print(f"[DEBUG] LangChain Response for Company: {response}")
     parsed_response = parse_company_info(response)
     print(f"[DEBUG] Parsed Response for Company: {parsed_response}")
@@ -165,7 +166,7 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
     위 정보를 정리할 때, 지원자가 자기소개서에 본인의 어떤 역량과 강점을 강조하면 좋을지도 함께 제안해줘.
     단, json형식으로 출력해줘.
     """
-    response = llm.predict(prompt)
+    response = search_llm.predict(prompt)
     print(f"[DEBUG] LangChain Response for Job: {response}")
     parsed_data = parse_langchain_response(response)
     print(f"[DEBUG] Parsed Response for Job: {parsed_data}")
