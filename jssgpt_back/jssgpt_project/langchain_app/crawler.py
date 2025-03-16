@@ -5,16 +5,16 @@ import logging
 import os
 from playwright.async_api import async_playwright
 
-# 모든 로그를 stderr로 출력 (stdout에는 오직 최종 JSON만 출력)
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+# 로그 레벨을 INFO로 설정하여 불필요한 디버그 로그를 줄임
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def ensure_logged_in(playwright):
     """
-    state.json 파일이 없으면 로그인 과정을 수행하여 state.json에 세션 상태를 저장합니다.
+    state.json 파일이 없으면 로그인 후 세션 상태를 저장합니다.
     """
     if os.path.exists("state.json"):
-        logger.debug("이미 로그인 상태가 저장되어 있습니다.")
+        logger.info("이미 로그인 상태가 저장되어 있습니다.")
         return
 
     browser = await playwright.chromium.launch(
@@ -28,29 +28,29 @@ async def ensure_logged_in(playwright):
 
     try:
         await page.click("div[data-sentry-component='PopupAdvertise'] button", timeout=10000)
-        logger.debug("팝업 닫기 완료")
+        logger.info("팝업 닫기 완료")
     except Exception as e:
-        logger.debug("팝업이 없거나 닫기 실패: %s", e)
+        logger.info("팝업이 없거나 닫기 실패: %s", e)
 
     try:
         await page.evaluate("document.querySelector('div[data-sentry-component=\"PopupAdvertise\"]').remove()")
-        logger.debug("팝업 요소 제거 완료")
+        logger.info("팝업 요소 제거 완료")
     except Exception as e:
-        logger.debug("팝업 요소 제거 불필요: %s", e)
+        logger.info("팝업 요소 제거 불필요: %s", e)
 
     try:
         await page.click("button:has-text('회원가입/로그인')", timeout=10000)
-        logger.debug("로그인 버튼 클릭 완료")
+        logger.info("로그인 버튼 클릭 완료")
     except Exception as e:
-        logger.debug("로그인 버튼 클릭 실패: %s", e)
+        logger.info("로그인 버튼 클릭 실패: %s", e)
         await browser.close()
         return
 
     try:
         await page.wait_for_selector("input[name='id']", timeout=15000)
-        logger.debug("로그인 모달 로드 완료")
+        logger.info("로그인 모달 로드 완료")
     except Exception as e:
-        logger.debug("로그인 모달 로드 실패: %s", e)
+        logger.info("로그인 모달 로드 실패: %s", e)
         await browser.close()
         return
 
@@ -60,42 +60,41 @@ async def ensure_logged_in(playwright):
     try:
         login_button = page.get_by_text("로그인", exact=True)
         await login_button.click(timeout=10000)
-        logger.debug("로그인 버튼 클릭 완료")
+        logger.info("로그인 버튼 클릭 완료")
     except Exception as e:
-        logger.debug("로그인 버튼 클릭 실패: %s", e)
+        logger.info("로그인 버튼 클릭 실패: %s", e)
         await page.screenshot(path="error_screenshot_click_fail.png")
         await browser.close()
         return
 
     try:
         await page.wait_for_selector("div[data-sentry-component='PopupAdvertise']", timeout=15000)
-        logger.debug("로그인 성공 후 팝업 감지!")
+        logger.info("로그인 성공 후 팝업 감지!")
         await page.click("div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
-        logger.debug("로그인 성공 후 팝업 닫기 완료")
+        logger.info("로그인 성공 후 팝업 닫기 완료")
     except Exception as e:
-        logger.debug("팝업 감지 실패. 텍스트 또는 URL로 로그인 확인 진행: %s", e)
+        logger.info("팝업 감지 실패. 텍스트 또는 URL로 로그인 확인 진행: %s", e)
         try:
             await page.wait_for_selector("span.text-gray-900:has-text('의 맞춤공고예요.')", timeout=15000)
-            logger.debug("로그인 성공! 텍스트 확인 완료")
+            logger.info("로그인 성공! 텍스트 확인 완료")
         except Exception as e:
-            logger.debug("로그인 성공 텍스트 확인 실패: %s", e)
+            logger.info("로그인 성공 텍스트 확인 실패: %s", e)
             current_url = page.url
             if "dashboard" in current_url:
-                logger.debug("로그인 성공 (URL 확인)!")
+                logger.info("로그인 성공 (URL 확인)!")
             else:
                 await page.screenshot(path="error_screenshot_login_fail.png")
-                logger.debug("로그인 실패! 스크린샷 저장.")
+                logger.info("로그인 실패! 스크린샷 저장.")
                 await browser.close()
                 return
 
     await context.storage_state(path="state.json")
-    logger.debug("로그인 세션 저장 완료.")
+    logger.info("로그인 세션 저장 완료.")
     await browser.close()
 
 async def extract_modal_data(page, calendar_item):
     """
-    선택한 날짜의 calendar_item 내에 있는 모든 기업 정보를 추출합니다.
-    모달 방식(jss2.html)으로 추출하는 경우 디버깅 로그를 남깁니다.
+    모달 방식으로 기업 정보를 추출합니다.
     """
     companies = []
     try:
@@ -125,7 +124,7 @@ async def extract_modal_data(page, calendar_item):
                         "recruitment_title": recruitment_title,
                         "jobs": []
                     })
-                    logger.debug("모달 방식: 탐지된 기업 - %s", company_name)
+                    logger.info("모달 방식: 탐지된 기업 - %s", company_name)
                 else:
                     logger.info("모달 방식: a.company 링크 없음. 추가 처리 필요.")
                     await item.scroll_into_view_if_needed()
@@ -152,7 +151,7 @@ async def extract_modal_data(page, calendar_item):
                         "recruitment_title": recruitment_title,
                         "jobs": []
                     })
-                    logger.debug("모달 방식: 탐지된 기업(모달) - %s", modal_company_name)
+                    logger.info("모달 방식: 탐지된 기업(모달) - %s", modal_company_name)
                     close_button = await page.query_selector("button.modal-close-btn")
                     if close_button:
                         await close_button.click()
@@ -178,7 +177,7 @@ async def extract_modal_data(page, calendar_item):
                 "recruitment_title": recruitment_title,
                 "jobs": []
             }
-            logger.debug("모달 방식: 단일 기업 추출 - %s", company_name)
+            logger.info("모달 방식: 단일 기업 추출 - %s", company_name)
             return [single_company]
     except Exception as e:
         logger.error("모달 추출 중 오류: %s", e)
@@ -187,8 +186,8 @@ async def extract_modal_data(page, calendar_item):
 
 async def integrated_crawler(target_date):
     """
-    target_date: 크롤링할 날짜 (YYYYMMDD 문자열)
-    로그인 상태가 저장된 state.json 파일을 이용해 크롤링을 진행합니다.
+    target_date: 크롤링할 날짜 (YYYYMMDD)
+    각 기업의 상세 정보를 처리한 후 바로 yield하여 스트리밍 방식으로 데이터를 반환합니다.
     """
     async with async_playwright() as p:
         await ensure_logged_in(p)
@@ -209,19 +208,19 @@ async def integrated_crawler(target_date):
         await page.goto("https://jasoseol.com/recruit")
         try:
             await page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
-            logger.debug("메인 페이지 팝업 닫기 완료")
+            logger.info("메인 페이지 팝업 닫기 완료")
         except Exception as e:
-            logger.debug("메인 페이지 팝업 없음 또는 닫기 실패: %s", e)
+            logger.info("메인 페이지 팝업 없음 또는 닫기 실패: %s", e)
 
-        logger.debug("선택한 날짜: %s", target_date)
+        logger.info("선택한 날짜: %s", target_date)
         calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
         max_attempts = 12
         attempts = 0
         while not calendar_items and attempts < max_attempts:
-            logger.debug("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
+            logger.info("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
             next_button = await page.query_selector('[ng-click="addMonth(1)"]')
             if not next_button:
-                logger.debug("다음 달 버튼을 찾을 수 없습니다.")
+                logger.info("다음 달 버튼을 찾을 수 없습니다.")
                 break
             await next_button.click()
             await page.wait_for_timeout(1000)
@@ -229,11 +228,11 @@ async def integrated_crawler(target_date):
             attempts += 1
 
         if not calendar_items:
-            logger.debug("%s에 해당하는 캘린더 아이템을 찾을 수 없습니다.", target_date)
+            logger.info("%s에 해당하는 캘린더 아이템을 찾을 수 없습니다.", target_date)
             await browser.close()
             return
 
-        all_companies = []
+        # 각 캘린더 아이템에서 기업 정보를 추출하고 바로 yield
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
             company_links = await item.query_selector_all("a.company")
@@ -257,130 +256,124 @@ async def integrated_crawler(target_date):
                             "recruitment_title": recruitment_title,
                             "jobs": []
                         })
-            if companies_from_item:
-                logger.debug("캘린더 아이템 #%s: 탐지된 기업 수 (a.company 방식) = %s", idx+1, len(companies_from_item))
-            else:
-                logger.debug("캘린더 아이템 #%s: a.company 방식으로 기업을 찾지 못함. 모달 방식으로 처리", idx+1)
+            if not companies_from_item:
+                logger.info("캘린더 아이템 #%s: a.company 방식으로 기업을 찾지 못함. 모달 방식으로 처리", idx+1)
                 companies_from_item = await extract_modal_data(page, item)
-                logger.debug("캘린더 아이템 #%s: 모달 방식으로 탐지된 기업 수 = %s", idx+1, len(companies_from_item))
-            all_companies.extend(companies_from_item)
-
-        logger.debug("메인 페이지에서 총 탐지된 기업 수 = %s", len(all_companies))
-
-        # 각 회사에 대해 상세 정보 추출
-        for company in all_companies:
-            logger.debug("디테일 크롤링 시작: %s - %s", company['company_name'], company['link'])
-            try:
-                # detail_page를 새로 생성한 후, 작업 완료 시 close
-                detail_page = await context.new_page()
+                logger.info("캘린더 아이템 #%s: 모달 방식으로 탐지된 기업 수 = %s", idx+1, len(companies_from_item))
+            for company in companies_from_item:
+                logger.info("디테일 크롤링 시작: %s - %s", company['company_name'], company['link'])
                 try:
-                    await detail_page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
-                    await detail_page.goto(company["link"])
+                    detail_page = await context.new_page()
                     try:
-                        await detail_page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
-                        logger.debug("디테일 페이지 팝업 닫기 완료")
+                        await detail_page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
+                        await detail_page.goto(company["link"])
+                        try:
+                            await detail_page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
+                            logger.info("디테일 페이지 팝업 닫기 완료")
+                        except Exception as e:
+                            logger.info("디테일 페이지 팝업 없음 또는 닫기 실패: %s", e)
+                        try:
+                            await detail_page.evaluate("""() => {
+                                const popup = document.querySelector("div[data-sentry-component='PopupAdvertise']");
+                                if (popup) { popup.remove(); }
+                            }""")
+                            logger.info("디테일 페이지 광고 배너 강제 제거 완료")
+                        except Exception as e:
+                            logger.info("광고 배너 강제 제거 실패: %s", e)
                     except Exception as e:
-                        logger.debug("디테일 페이지 팝업 없음 또는 닫기 실패: %s", e)
+                        logger.info("디테일 페이지 접속 오류: %s - %s", company['link'], e)
+                        await detail_page.close()
+                        continue
+
                     try:
-                        await detail_page.evaluate("""() => {
-                            const popup = document.querySelector("div[data-sentry-component='PopupAdvertise']");
-                            if (popup) { popup.remove(); }
-                        }""")
-                        logger.debug("디테일 페이지 광고 배너 강제 제거 완료")
+                        selector_end_date = r"div.flex.gap-\[4px\].mb-\[20px\].body5"
+                        await detail_page.wait_for_selector(selector_end_date, timeout=15000)
+                        date_div = await detail_page.query_selector(selector_end_date)
+                        spans = await date_div.query_selector_all("span")
+                        end_date = (await spans[2].inner_text()).strip() if len(spans) >= 4 else None
                     except Exception as e:
-                        logger.debug("광고 배너 강제 제거 실패: %s", e)
-                except Exception as e:
-                    logger.debug("디테일 페이지 접속 오류: %s - %s", company['link'], e)
+                        logger.info("종료일 크롤링 오류: %s - %s", company['link'], e)
+                        end_date = None
+                    company["end_date"] = end_date
+
+                    try:
+                        link_elem = await detail_page.query_selector("a.flex-grow:has(button:has-text('채용 사이트'))")
+                        recruitment_link = await link_elem.get_attribute("href") if link_elem else None
+                    except Exception as e:
+                        logger.info("채용 사이트 링크 크롤링 오류: %s - %s", company['link'], e)
+                        recruitment_link = None
+                    company["recruitment_link"] = recruitment_link
+
+                    try:
+                        await detail_page.wait_for_selector("ul.shadow2", timeout=5000)
+                        container = await detail_page.query_selector("ul.shadow2")
+                        job_elements = await container.query_selector_all("li.flex.justify-center")
+                    except Exception as e:
+                        logger.info("ul.shadow2 not found, fallback to li.flex.justify-center: %s", e)
+                        job_elements = await detail_page.query_selector_all("li.flex.justify-center")
+
+                    jobs = []
+                    for idx, li_elem in enumerate(job_elements):
+                        recruitment_type = recruitment_title = None
+                        try:
+                            spans = await li_elem.query_selector_all("span")
+                            if len(spans) >= 2:
+                                recruitment_type = (await spans[0].inner_text()).strip()
+                                recruitment_title = (await spans[1].inner_text()).strip()
+                        except Exception as e:
+                            logger.info("Error extracting job type/title for job #%s: %s", idx+1, e)
+
+                        essay_questions = []
+                        try:
+                            button = await li_elem.query_selector("button:has-text('자기소개서 쓰기')")
+                            if button:
+                                await button.click()
+                                essay_blocks = await li_elem.query_selector_all("div.font-normal.mb-\\[8px\\]")
+                                visible_blocks = [block for block in essay_blocks if await block.is_visible()]
+                                if visible_blocks:
+                                    for block in visible_blocks:
+                                        q_elem = await block.query_selector("div.text-\\[14px\\]")
+                                        l_elem = await block.query_selector("div.text-\\[10px\\]")
+                                        if q_elem and l_elem:
+                                            q_text = (await q_elem.inner_text()).strip()
+                                            l_text = (await l_elem.inner_text()).strip()
+                                            essay_questions.append({
+                                                "question": q_text,
+                                                "limit": l_text
+                                            })
+                                else:
+                                    logger.info("No visible essay section found for job #%s", idx+1)
+                            else:
+                                logger.info("Job #%s: '자기소개서 쓰기' button not found.", idx+1)
+                        except Exception as e:
+                            logger.info("Error extracting essay questions for job #%s: %s", idx+1, e)
+
+                        jobs.append({
+                            "recruitment_type": recruitment_type,
+                            "recruitment_title": recruitment_title,
+                            "essay_questions": essay_questions
+                        })
+                    company["jobs"] = jobs
+                    logger.info("디테일 크롤링 완료: %s", company['company_name'])
                     await detail_page.close()
+                    # yield 함으로써 즉시 처리(스트리밍)
+                    yield company
+                except Exception as e:
+                    logger.info("디테일 페이지 처리 중 예외 발생: %s", e)
                     continue
 
-                try:
-                    selector_end_date = r"div.flex.gap-\[4px\].mb-\[20px\].body5"
-                    await detail_page.wait_for_selector(selector_end_date, timeout=15000)
-                    date_div = await detail_page.query_selector(selector_end_date)
-                    spans = await date_div.query_selector_all("span")
-                    end_date = (await spans[2].inner_text()).strip() if len(spans) >= 4 else None
-                except Exception as e:
-                    logger.debug("종료일 크롤링 오류: %s - %s", company['link'], e)
-                    end_date = None
-                company["end_date"] = end_date
-
-                try:
-                    link_elem = await detail_page.query_selector("a.flex-grow:has(button:has-text('채용 사이트'))")
-                    recruitment_link = await link_elem.get_attribute("href") if link_elem else None
-                except Exception as e:
-                    logger.debug("채용 사이트 링크 크롤링 오류: %s - %s", company['link'], e)
-                    recruitment_link = None
-                company["recruitment_link"] = recruitment_link
-
-                try:
-                    await detail_page.wait_for_selector("ul.shadow2", timeout=5000)
-                    container = await detail_page.query_selector("ul.shadow2")
-                    job_elements = await container.query_selector_all("li.flex.justify-center")
-                except Exception as e:
-                    logger.debug("ul.shadow2 not found, fallback to li.flex.justify-center: %s", e)
-                    job_elements = await detail_page.query_selector_all("li.flex.justify-center")
-
-                jobs = []
-                for idx, li_elem in enumerate(job_elements):
-                    recruitment_type = recruitment_title = None
-                    try:
-                        spans = await li_elem.query_selector_all("span")
-                        if len(spans) >= 2:
-                            recruitment_type = (await spans[0].inner_text()).strip()
-                            recruitment_title = (await spans[1].inner_text()).strip()
-                    except Exception as e:
-                        logger.debug("Error extracting job type/title for job #%s: %s", idx+1, e)
-
-                    essay_questions = []
-                    try:
-                        button = await li_elem.query_selector("button:has-text('자기소개서 쓰기')")
-                        if button:
-                            await button.click()
-                            essay_blocks = await li_elem.query_selector_all("div.font-normal.mb-\\[8px\\]")
-                            visible_blocks = []
-                            for block in essay_blocks:
-                                if await block.is_visible():
-                                    visible_blocks.append(block)
-                            if visible_blocks:
-                                for block in visible_blocks:
-                                    q_elem = await block.query_selector("div.text-\\[14px\\]")
-                                    l_elem = await block.query_selector("div.text-\\[10px\\]")
-                                    if q_elem and l_elem:
-                                        q_text = (await q_elem.inner_text()).strip()
-                                        l_text = (await l_elem.inner_text()).strip()
-                                        essay_questions.append({
-                                            "question": q_text,
-                                            "limit": l_text
-                                        })
-                            else:
-                                logger.debug("No visible essay section found for job #%s", idx+1)
-                        else:
-                            logger.debug("Job #%s: '자기소개서 쓰기' button not found.", idx+1)
-                    except Exception as e:
-                        logger.debug("Error extracting essay questions for job #%s: %s", idx+1, e)
-
-                    jobs.append({
-                        "recruitment_type": recruitment_type,
-                        "recruitment_title": recruitment_title,
-                        "essay_questions": essay_questions
-                    })
-                company["jobs"] = jobs
-                logger.debug("디테일 크롤링 완료: %s", company['company_name'])
-                await detail_page.close()
-            except Exception as e:
-                logger.debug("디테일 페이지 처리 중 예외 발생: %s", e)
-                continue
-
         await browser.close()
-        return all_companies
+        
+async def main(target_date):
+    async for company in integrated_crawler(target_date):
+        # integrated_crawler를 async generator로 순회하여 yield 받은 기업 데이터를 바로 처리
+        yield company
 
 if __name__ == "__main__":
     target_date = input("크롤링할 날짜 (YYYYMMDD)를 입력하세요: ")
     companies_data = []
     async def collect_data():
-        data = await integrated_crawler(target_date)
-        if data:
-            companies_data.extend(data)
+        async for company in main(target_date):
+            companies_data.append(company)
     asyncio.run(collect_data())
     print(json.dumps(companies_data))
