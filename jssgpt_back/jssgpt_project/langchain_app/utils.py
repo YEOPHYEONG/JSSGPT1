@@ -13,7 +13,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # OpenAI 설정
 llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0, openai_api_key=openai_api_key)
-search_llm = ChatOpenAI(model="gpt-4o-search-preview-2025-03-11", openai_api_key=openai_api_key)
+search_llm = ChatOpenAI(model="gpt-4o-search-preview-2025-03-11", temperature=None, openai_api_key=openai_api_key)
 
 def clean_json_response(response):
     """
