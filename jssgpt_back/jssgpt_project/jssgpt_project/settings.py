@@ -208,6 +208,8 @@ CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = None  # 결과 저장이 필요하면 다른 백엔드를 설정하세요.
+CELERY_WORKER_CONCURRENCY = 1
+
 
 REST_FRAMEWORK = {
     # 기본 렌더러를 JSON으로 한정 (API 전용)
