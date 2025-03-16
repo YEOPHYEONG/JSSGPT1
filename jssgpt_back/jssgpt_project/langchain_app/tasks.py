@@ -18,10 +18,11 @@ def crawl_recruitments_task(target_date_str):
     try:
         logger.info(f"Starting Celery task for target_date: {target_date_str}")
         async def process_crawl():
-            async for company in integrated_crawler(target_date_str):
+            companies = await integrated_crawler(target_date_str)
+            for company in companies:
                 try:
                     from .utils_crawler import save_company_data
-                    # sync_to_async로 동기 함수를 비동기 호출
+                    # sync_to_async로 동기 함수를 비동기로 호출
                     await sync_to_async(save_company_data)(company)
                     logger.info(f"Saved data for {company.get('company_name')}")
                 except Exception as e:
