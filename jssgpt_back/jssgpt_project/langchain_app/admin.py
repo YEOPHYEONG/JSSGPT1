@@ -6,9 +6,10 @@ import datetime
 from .models import Company, Recruitment, RecruitJob, CoverLetterPrompt
 from .tasks import crawl_recruitments_task  # 새로 만든 Celery 태스크
 
-# 크롤링 폼 정의
+# 크롤링 폼 정의 (기업명 필드 추가)
 class CrawlForm(forms.Form):
     date = forms.DateField(label="크롤링할 날짜", widget=forms.SelectDateWidget)
+    company_name = forms.CharField(label="기업명 (선택)", required=False)
 
 # RecruitmentAdmin에 커스텀 URL을 추가하여 크롤링 뷰를 제공
 class RecruitmentAdmin(admin.ModelAdmin):
@@ -25,17 +26,14 @@ class RecruitmentAdmin(admin.ModelAdmin):
         if request.method == "POST":
             form = CrawlForm(request.POST)
             if form.is_valid():
-                # 선택한 날짜를 YYYYMMDD 문자열로 변환
                 date = form.cleaned_data["date"]
                 target_date_str = date.strftime("%Y%m%d")
-                
-                # Celery 태스크를 큐에 등록하여 백그라운드에서 크롤링 실행
-                crawl_recruitments_task.delay(target_date_str)
-                
-                # 관리자에게 작업이 큐에 등록되었음을 알림
+                company_name = form.cleaned_data.get("company_name")
+                # Celery 태스크에 날짜와 기업명 인자 함께 전달
+                crawl_recruitments_task.delay(target_date_str, company_name)
                 self.message_user(
                     request, 
-                    f"{target_date_str}의 크롤링 작업이 큐에 등록되었습니다.", 
+                    f"{target_date_str}의 크롤링 작업이 큐에 등록되었습니다. (기업: {company_name or '전체'})", 
                     level=messages.INFO
                 )
                 return redirect("..")

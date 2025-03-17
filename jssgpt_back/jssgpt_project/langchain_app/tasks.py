@@ -13,15 +13,15 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 @shared_task
-def crawl_recruitments_task(target_date_str):
-    from .crawler import main  # main() is our async generator wrapper
+def crawl_recruitments_task(target_date_str, company_name=None):
+    from .crawler import main  # main()는 비동기 generator wrapper
     try:
-        logger.info(f"Starting Celery task for target_date: {target_date_str}")
+        logger.info(f"Starting Celery task for target_date: {target_date_str}, company: {company_name}")
         async def process_crawl():
-            async for company in main(target_date_str):
+            async for company in main(target_date_str, company_name):
                 try:
                     from .utils_crawler import save_company_data
-                    # 각 기업 데이터를 바로 데이터베이스에 저장하여 메모리 누적 최소화
+                    # 크롤링된 각 기업 데이터를 바로 DB에 저장
                     await sync_to_async(save_company_data)(company)
                     logger.info(f"Saved data for {company.get('company_name')}")
                 except Exception as e:

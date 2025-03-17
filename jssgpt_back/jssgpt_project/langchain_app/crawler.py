@@ -5,14 +5,10 @@ import logging
 import os
 from playwright.async_api import async_playwright
 
-# 로그 레벨을 INFO로 설정하여 불필요한 디버그 로그를 줄임
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def ensure_logged_in(playwright):
-    """
-    state.json 파일이 없으면 로그인 후 세션 상태를 저장합니다.
-    """
     if os.path.exists("state.json"):
         logger.info("이미 로그인 상태가 저장되어 있습니다.")
         return
@@ -23,21 +19,17 @@ async def ensure_logged_in(playwright):
     )
     context = await browser.new_context(viewport={"width": 800, "height": 600})
     page = await context.new_page()
-
     await page.goto("https://jasoseol.com/")
-
     try:
         await page.click("div[data-sentry-component='PopupAdvertise'] button", timeout=10000)
         logger.info("팝업 닫기 완료")
     except Exception as e:
         logger.info("팝업이 없거나 닫기 실패: %s", e)
-
     try:
         await page.evaluate("document.querySelector('div[data-sentry-component=\"PopupAdvertise\"]').remove()")
         logger.info("팝업 요소 제거 완료")
     except Exception as e:
         logger.info("팝업 요소 제거 불필요: %s", e)
-
     try:
         await page.click("button:has-text('회원가입/로그인')", timeout=10000)
         logger.info("로그인 버튼 클릭 완료")
@@ -45,7 +37,6 @@ async def ensure_logged_in(playwright):
         logger.info("로그인 버튼 클릭 실패: %s", e)
         await browser.close()
         return
-
     try:
         await page.wait_for_selector("input[name='id']", timeout=15000)
         logger.info("로그인 모달 로드 완료")
@@ -53,10 +44,8 @@ async def ensure_logged_in(playwright):
         logger.info("로그인 모달 로드 실패: %s", e)
         await browser.close()
         return
-
     await page.fill("input[name='id']", "geuloing@gmail.com")
     await page.fill("input[name='password']", "jssgpt564!")
-    
     try:
         login_button = page.get_by_text("로그인", exact=True)
         await login_button.click(timeout=10000)
@@ -66,7 +55,6 @@ async def ensure_logged_in(playwright):
         await page.screenshot(path="error_screenshot_click_fail.png")
         await browser.close()
         return
-
     try:
         await page.wait_for_selector("div[data-sentry-component='PopupAdvertise']", timeout=15000)
         logger.info("로그인 성공 후 팝업 감지!")
@@ -87,15 +75,11 @@ async def ensure_logged_in(playwright):
                 logger.info("로그인 실패! 스크린샷 저장.")
                 await browser.close()
                 return
-
     await context.storage_state(path="state.json")
     logger.info("로그인 세션 저장 완료.")
     await browser.close()
 
 async def extract_modal_data(page, calendar_item):
-    """
-    모달 방식으로 기업 정보를 추출합니다.
-    """
     companies = []
     try:
         employment_items = await calendar_item.query_selector_all(".employment-group-item")
@@ -184,14 +168,9 @@ async def extract_modal_data(page, calendar_item):
         await page.screenshot(path="error_screenshot_modal_fail.png")
         return []
 
-async def integrated_crawler(target_date):
-    """
-    target_date: 크롤링할 날짜 (YYYYMMDD)
-    각 기업의 상세 정보를 처리한 후 바로 yield하여 스트리밍 방식으로 데이터를 반환합니다.
-    """
+async def integrated_crawler(target_date, filter_company=None):
     async with async_playwright() as p:
         await ensure_logged_in(p)
-
         browser = await p.chromium.launch(
             headless=True,
             args=["--disable-extensions", "--disable-gpu", "--disable-dev-shm-usage"]
@@ -201,17 +180,13 @@ async def integrated_crawler(target_date):
             viewport={"width": 800, "height": 600}
         )
         page = await context.new_page()
-
-        # 불필요한 리소스 차단
         await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
-
         await page.goto("https://jasoseol.com/recruit")
         try:
             await page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
             logger.info("메인 페이지 팝업 닫기 완료")
         except Exception as e:
             logger.info("메인 페이지 팝업 없음 또는 닫기 실패: %s", e)
-
         logger.info("선택한 날짜: %s", target_date)
         calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
         max_attempts = 12
@@ -232,7 +207,6 @@ async def integrated_crawler(target_date):
             await browser.close()
             return
 
-        # 각 캘린더 아이템에서 기업 정보를 추출하고 바로 yield
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
             company_links = await item.query_selector_all("a.company")
@@ -260,6 +234,14 @@ async def integrated_crawler(target_date):
                 logger.info("캘린더 아이템 #%s: a.company 방식으로 기업을 찾지 못함. 모달 방식으로 처리", idx+1)
                 companies_from_item = await extract_modal_data(page, item)
                 logger.info("캘린더 아이템 #%s: 모달 방식으로 탐지된 기업 수 = %s", idx+1, len(companies_from_item))
+            if filter_company:
+                companies_from_item = [
+                    company for company in companies_from_item 
+                    if filter_company.lower() in company.get("company_name", "").lower()
+                ]
+                if not companies_from_item:
+                    logger.info("캘린더 아이템 #%s에서 '%s'에 해당하는 기업을 찾지 못함", idx+1, filter_company)
+                    continue
             for company in companies_from_item:
                 logger.info("디테일 크롤링 시작: %s - %s", company['company_name'], company['link'])
                 try:
@@ -356,7 +338,6 @@ async def integrated_crawler(target_date):
                     company["jobs"] = jobs
                     logger.info("디테일 크롤링 완료: %s", company['company_name'])
                     await detail_page.close()
-                    # yield 함으로써 즉시 처리(스트리밍)
                     yield company
                 except Exception as e:
                     logger.info("디테일 페이지 처리 중 예외 발생: %s", e)
@@ -364,16 +345,16 @@ async def integrated_crawler(target_date):
 
         await browser.close()
         
-async def main(target_date):
-    async for company in integrated_crawler(target_date):
-        # integrated_crawler를 async generator로 순회하여 yield 받은 기업 데이터를 바로 처리
+async def main(target_date, filter_company=None):
+    async for company in integrated_crawler(target_date, filter_company):
         yield company
 
 if __name__ == "__main__":
     target_date = input("크롤링할 날짜 (YYYYMMDD)를 입력하세요: ")
+    company_name = input("기업명 (선택, 없으면 엔터): ").strip() or None
     companies_data = []
     async def collect_data():
-        async for company in main(target_date):
+        async for company in main(target_date, company_name):
             companies_data.append(company)
     asyncio.run(collect_data())
     print(json.dumps(companies_data))
