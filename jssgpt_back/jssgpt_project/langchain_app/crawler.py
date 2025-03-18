@@ -88,7 +88,7 @@ async def extract_modal_data(page, calendar_item):
                 label_elem = await item.query_selector("div.calendar-label.start")
                 if label_elem:
                     label_text = (await label_elem.inner_text()).strip()
-                    if label_text != "시":
+                    if label_text != "끝":
                         continue
                 link_elem = await item.query_selector("a.company")
                 if link_elem:
