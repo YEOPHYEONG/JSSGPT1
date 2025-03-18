@@ -235,12 +235,18 @@ async def integrated_crawler(target_date, filter_company=None):
                 companies_from_item = await extract_modal_data(page, item)
                 logger.info("캘린더 아이템 #%s: 모달 방식으로 탐지된 기업 수 = %s", idx+1, len(companies_from_item))
             if filter_company:
-                companies_from_item = [
-                    company for company in companies_from_item 
-                    if filter_company.lower() in company.get("company_name", "").lower()
-                ]
+                if isinstance(filter_company, list):
+                    companies_from_item = [
+                        company for company in companies_from_item 
+                        if any(name.lower() in company.get("company_name", "").lower() for name in filter_company)
+                    ]
+                else:
+                    companies_from_item = [
+                        company for company in companies_from_item 
+                        if filter_company.lower() in company.get("company_name", "").lower()
+                    ]
                 if not companies_from_item:
-                    logger.info("캘린더 아이템 #%s에서 '%s'에 해당하는 기업을 찾지 못함", idx+1, filter_company)
+                    logger.info("캘린더 아이템 #%s에서 주어진 기업 목록에 해당하는 기업을 찾지 못함", idx+1)
                     continue
             for company in companies_from_item:
                 logger.info("디테일 크롤링 시작: %s - %s", company['company_name'], company['link'])
@@ -351,10 +357,14 @@ async def main(target_date, filter_company=None):
 
 if __name__ == "__main__":
     target_date = input("크롤링할 날짜 (YYYYMMDD)를 입력하세요: ")
-    company_name = input("기업명 (선택, 없으면 엔터): ").strip() or None
+    company_name = input("기업명 (선택, 여러 개는 쉼표로 구분, 없으면 엔터): ").strip() or None
+    if company_name:
+        company_names = [name.strip() for name in company_name.split(",") if name.strip()]
+    else:
+        company_names = None
     companies_data = []
     async def collect_data():
-        async for company in main(target_date, company_name):
+        async for company in main(target_date, company_names):
             companies_data.append(company)
     asyncio.run(collect_data())
     print(json.dumps(companies_data))
