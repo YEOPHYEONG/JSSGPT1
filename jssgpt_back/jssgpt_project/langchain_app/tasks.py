@@ -13,12 +13,12 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 @shared_task
-def crawl_recruitments_task(target_date_str, company_name=None):
+def crawl_recruitments_task(target_date_str, company_name=None, crawl_mode="start"):
     from .crawler import main  # main()는 비동기 generator wrapper
     try:
-        logger.info(f"Starting Celery task for target_date: {target_date_str}, company: {company_name}")
+        logger.info(f"Starting Celery task for target_date: {target_date_str}, company: {company_name}, mode: {crawl_mode}")
         async def process_crawl():
-            async for company in main(target_date_str, company_name):
+            async for company in main(target_date_str, company_name, crawl_mode):
                 try:
                     from .utils_crawler import save_company_data
                     # 크롤링된 각 기업 데이터를 바로 DB에 저장

@@ -40,6 +40,16 @@ def parse_limit(limit_str):
         print(f"[ERROR] limit 파싱 실패: {e}")
         return None
 
+def parse_detail_start_date(detail_text):
+    """
+    상세 페이지의 시작 날짜 텍스트(예: "2025년 3월 4일 10:00")를 파싱하여 datetime.date 객체를 반환합니다.
+    """
+    try:
+        return datetime.datetime.strptime(detail_text.strip(), "%Y년 %m월 %d일 %H:%M").date()
+    except Exception as e:
+        print(f"[ERROR] detail start_date 파싱 실패: {e}")
+        return None
+
 def save_crawled_json_data(data_list):
     # 기존 함수 유지
     for comp in data_list:
@@ -117,7 +127,6 @@ def save_company_data(company_data):
         if raw_end_date:
             parsed_end_date = parse_end_date(raw_end_date)
             if parsed_end_date is None and start_date:
-                # 파싱 실패 시 start_date 기준 7일 후로 설정
                 end_date = start_date + datetime.timedelta(days=7)
             else:
                 end_date = parsed_end_date
