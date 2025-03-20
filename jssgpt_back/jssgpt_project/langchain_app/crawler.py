@@ -214,7 +214,7 @@ async def integrated_crawler(target_date, filter_company=None):
                 label_elem = await comp.query_selector("div.calendar-label.start")
                 if label_elem:
                     label_text = (await label_elem.inner_text()).strip()
-                    if label_text == "시":
+                    if label_text == "끝":
                         href = await comp.get_attribute("href")
                         company_elem = await comp.query_selector("div.company-name span")
                         company_name = await company_elem.inner_text() if company_elem else "N/A"

@@ -61,15 +61,20 @@ def flatten_json(data):
 
 def parse_company_info(response):
     """
-    LangChain 응답을 정리, JSON 파싱 후 평탄화합니다.
-    JSON 파싱에 실패하면 기존 문자열 기반 파싱 방식을 사용합니다.
+    LangChain 응답을 정리하고, JSON 파싱 후 평탄화합니다.
+    JSON 파싱에 실패하면 fallback 방식으로 라인 단위 파싱을 사용합니다.
+    만약 최상위 JSON 딕셔너리에 단일 키가 있고 그 값이 dict이면, 그 내부 딕셔너리를 사용합니다.
     """
     cleaned = clean_json_response(response)
     try:
         data = json.loads(cleaned)
+        # 최상위 딕셔너리에 단일 키가 있고, 해당 값이 dict인 경우 내부로 이동
+        if isinstance(data, dict) and len(data) == 1:
+            inner = list(data.values())[0]
+            if isinstance(inner, dict):
+                data = inner
         return flatten_json(data)
     except json.JSONDecodeError:
-        # JSON 파싱 실패 시 fallback 방식
         parsed_response = {}
         try:
             lines = cleaned.split("\n")
@@ -84,13 +89,17 @@ def parse_company_info(response):
 
 def parse_langchain_response(response):
     """
-    LangChain 응답을 정리, JSON 파싱 후 평탄화합니다.
-    JSON 파싱에 실패하면 기존 문자열 기반 파싱 방식을 사용합니다.
+    LangChain 응답을 정리하고, JSON 파싱 후 평탄화합니다.
+    파싱에 성공하면, 키의 언더바("_")를 공백(" ")으로 치환하여 반환합니다.
+    JSON 파싱에 실패하면, 기존 문자열 기반 파싱 방식을 사용하고 동일하게 키를 정규화합니다.
     """
     cleaned = clean_json_response(response)
     try:
         data = json.loads(cleaned)
-        return flatten_json(data)
+        flattened = flatten_json(data)
+        # 언더바를 공백으로 치환하여 키 정규화
+        normalized = { k.replace("_", " "): v for k, v in flattened.items() }
+        return normalized
     except json.JSONDecodeError:
         parsed_response = {}
         current_key = None
@@ -113,6 +122,9 @@ def parse_langchain_response(response):
             if current_key and current_value:
                 clean_key = re.sub(r'^[\-\*\s]+', '', current_key).strip().strip('"')
                 parsed_response[clean_key] = " ".join(current_value).strip().strip('"')
+            # 언더바를 공백으로 치환하여 키 정규화
+            normalized = { k.replace("_", " "): v for k, v in parsed_response.items() }
+            return normalized
         except Exception as e:
             print(f"[ERROR] Failed to parse LangChain response: {e}")
         return parsed_response
