@@ -3,7 +3,7 @@ from django.db import models
 
 class Company(models.Model):
     name = models.CharField(max_length=255, unique=True)  # 기업명
-    industry = models.CharField(max_length=255, null=True, blank=True)  # 산업
+    industry = models.CharField(null=True, blank=True)  # 산업
     vision = models.TextField(null=True, blank=True)  # 비전
     mission = models.TextField(null=True, blank=True)  # 미션
     core_values = models.TextField(null=True, blank=True)  # 핵심 가치
