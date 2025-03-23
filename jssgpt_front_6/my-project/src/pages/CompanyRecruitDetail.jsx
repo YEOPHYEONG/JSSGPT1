@@ -56,19 +56,22 @@ function CompanyRecruitDetail() {
   const handleGenerationComplete = () => {
     setShowModal(false);
   
-    // prompts를 fetch하거나, 최소한 id/question_text만이라도 포함시켜야 안정적
-    const questions = selectedJob.essays || [];
+    const questions = selectedJob.essays;
+    if (!questions || questions.length === 0) {
+      alert("생성된 자기소개서 문항이 없습니다. 새로고침 후 다시 시도해주세요.");
+      return;
+    }
   
     navigate('/essay', {
       state: {
         companyName: recruitData.company_name,
         recruitmentTitle: selectedJob.title,
-        recruitJobId: selectedJob.id, // ✅ 필수!
-        questions, // ✅ questions 비어있어도 최소 []
+        recruitJobId: selectedJob.id,
+        questions,
       },
     });
   };
-  
+    
   if (error) return <div>Error: {error.message}</div>;
 
   if (!recruitData) {
