@@ -48,6 +48,6 @@
 @media (max-width: 768px) {
   .dayCell {
     min-height: 80px;
-    padding: 8px;
+    padding: 4px;
   }
 }
