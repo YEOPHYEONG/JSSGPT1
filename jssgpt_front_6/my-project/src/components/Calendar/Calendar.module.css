@@ -9,7 +9,7 @@
 }
 
 .calendarContainer {
-  color: #333333;
+  color: #000;
   font-family: 'Pretendard', sans-serif;
 }
 
@@ -46,9 +46,9 @@
   padding: 12px 0;
   font-weight: 600;
   color: #000000;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb00;
   font-size: 1rem;
-  background-color: #58b4f132;
+  background-color:  #e0f2fe;
 }
 
 .calendarGrid {
