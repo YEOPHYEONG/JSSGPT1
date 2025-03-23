@@ -16,9 +16,6 @@ const GoogleLoginButton = () => {
       
       console.log("Login response data:", res.data);
       const { user } = res.data;
-      
-      // 세션 기반이므로 토큰 저장은 생략 (백엔드가 세션 쿠키를 발행)
-      // 로그인 성공 시 user 객체를 전역 상태에 업데이트합니다.
       login(user);
       
       alert(`로그인 성공! ${user.username}님 환영합니다.`);
@@ -34,8 +31,16 @@ const GoogleLoginButton = () => {
   };
 
   return (
-    <div>
-      <GoogleLogin onSuccess={handleLoginSuccess} onError={handleLoginError} />
+    <div className="google-login-container">
+      <GoogleLogin 
+        theme="filled_black"
+        size="large"
+        text="signin_with"
+        shape="rectangular"
+        width="250px"
+        onSuccess={handleLoginSuccess}
+        onError={handleLoginError}
+      />
     </div>
   );
 };
