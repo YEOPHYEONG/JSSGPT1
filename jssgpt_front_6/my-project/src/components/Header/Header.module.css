@@ -1,6 +1,6 @@
 .header {
   width: 100%;
-  height: 80px;
+  height: 60px;
   position: fixed;
   top: 0;
   left: 0;
@@ -10,9 +10,9 @@
   align-items: center;
   padding: 0 40px;
   box-sizing: border-box;
-  background: #DD9570;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background: #f2f4f5;
   font-family: 'Pretendard', sans-serif;
+ 
 }
 
 .logo {
@@ -25,27 +25,6 @@
 
 .profileArea {
   position: relative;
-  display: flex;
-  align-items: center;
-}
-
-/* 새 이력서 업로드 버튼 스타일 (네모 박스, 라운드 처리) */
-.uploadResumeButton {
-  background-color: #ffffff;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: bold;
-  margin-right: 10px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.uploadResumeButton:hover {
-  background-color: #f0f0f0;
-  color: #1f2937;
 }
 
 .profileButton {
@@ -61,8 +40,9 @@
 }
 
 .profileIcon {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
+   
 }
 
 .dropdownMenu {
@@ -71,26 +51,36 @@
   right: 0;
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
-  padding: 12px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  
 }
 
 .email {
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 1rem;  
+  font-weight: bold;
+  margin-bottom: 10px;
   color: #1f2937;
+  background-color: #feee7d;
+  border-radius: 8px;
+  padding: 5px 12px; /* 상하 5px, 좌우 15px 여백 추가 */
+
 }
 
 .menuItem {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  font-weight: 700;
   background: none;
+  background-color: rgba(17, 24, 39, 0.05);
   border: none;
   color: #374151;
-  text-align: left;
+  text-align: center;
   padding: 6px 0;
   cursor: pointer;
   font-size: 0.9rem;
@@ -98,10 +88,45 @@
 }
 
 .menuItem:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
   color: #1f2937;
 }
 
 .loginPrompt {
-  font-size: 0.9rem;
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  font-weight: 800;
+  border-radius: 8px;
+  background-color: hsla(341, 83%, 63%, 0.3);
   color: #374151;
+  text-align: center;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.loginPrompt:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+  color: #1f2937;
+}
+
+.uploadResumeButton {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  font-weight: 700;
+  background-color: #10b981; /* 초록색 느낌 */
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-right: 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.uploadResumeButton:hover {
+  transform: scale(1.05);
+  opacity: 0.95;
 }

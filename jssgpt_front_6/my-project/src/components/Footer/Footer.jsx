@@ -6,7 +6,7 @@ function Footer() {
   return (
     <footer className={styles.footer}>
       <p>
-      <span className={styles.sparkle}>📭 피드백 대환영! 문의 및 불편사항: geuloing@gmail.com </span> <br />
+      <span className={styles.sparkle}>📭 피드백 대환영! 문의 및 불편사항: yanggeummyeong23@gmail.com </span> <br />
       © 2025 JSSGPT. All rights reserved. 
       </p>
     </footer>
