@@ -106,7 +106,7 @@ def upload_resume(request):
 
                 ---
 
-                ### 작업 방식 안내 (Reasoning을 위한 단계)
+                ### 작업 방식
 
                 #### 1단계: 자기소개서 경험 작성 가이드 파악
                 - 다음 {guide_text}를 읽고, 자기소개서를 위해 적절하게 경험을 구성하는 방법을 파악해.
@@ -134,6 +134,7 @@ def upload_resume(request):
                 **action** (4P: Product, Place, Promotion)  
                 → 당사자가 구체적으로 수행한 행동을 자세히 설명해줘.  
                 → 특히 어떤 결과물을 만들었는지(Product), 어디서 수행했고 그 이유는 무엇인지(Place), 어떻게 확산/홍보했는지(Promotion) 등의 측면을 반영해줘.
+                → result가 납득이 되도록 action을 자세하고, 논리적으로 추론해서 작성해줘.
 
                 **result** (4P: Price)  
                 → 행동의 결과가 수치나 반응 등으로 어떻게 나타났는지 설명해줘.  
