@@ -229,43 +229,75 @@ def generate_cover_letter_draft(request, recruit_job_id):
 
                 # 4) LLM 프롬프트 구성
                 prompt_text = f"""
-                아래의 정보를 바탕으로, **글자수 {char_limit}자 이내**로 자기소개서 초안을 작성해주세요.
+                다음은 자기소개서를 작성하기 위한 자료들이야.  
+                너의 목표는 이 정보를 바탕으로, **단순한 조합이 아닌 논리적인 사고 흐름을 따라 자기소개서를 작성**하는 거야.
 
-                1) 문항 내용 (question text):
+                최종 출력은 자기소개서 초안 한 편으로, 반드시 글자수 {char_limit}자 이내(최소 90%)로 작성할 것.  
+                출력에는 자기소개서 본문 외 아무 설명도 포함하지 마.
+
+                ---
+
+                ## 📘 입력 데이터
+
+                1. 자기소개서 문항
                 "{prompt.question_text}"
 
-                2) AI가 미리 만든 문항 개요 (outline):
-                "{prompt.outline}"
+                2. 아웃라인 (문항 분석, 키워드, 경험 연결)
+                {prompt.outline}
 
-                3) 선택된 STAR 경험:
-                - 제목: {star_experience.title}
-                - 상황(Situation): {star_experience.situation}
-                - 과제(Task): {star_experience.task}
-                - 행동(Action): {star_experience.action}
-                - 결과(Result): {star_experience.result}
+                3. 선택된 STAR 경험  
+                - 제목: {star_experience.title}  
+                - 상황: {star_experience.situation}  
+                - 과제: {star_experience.task}  
+                - 행동: {star_experience.action}  
+                - 결과: {star_experience.result}
 
-                4) 채용 직무 정보:
-                - 직무 설명: {recruit_job.description}
-                - 핵심 역할: {recruit_job.key_roles}
-                - 요구 역량: {recruit_job.required_skills}
-                - 관련 기술: {recruit_job.related_technologies}
-                - 소프트 스킬: {recruit_job.soft_skills}
+                4. 채용 직무 정보  
+                - 직무 설명: {recruit_job.description}  
+                - 핵심 역할: {recruit_job.key_roles}  
+                - 요구 역량: {recruit_job.required_skills}  
+                - 관련 기술: {recruit_job.related_technologies}  
+                - 소프트 스킬: {recruit_job.soft_skills}  
                 - 필요 강점: {recruit_job.key_strengths}
 
-                5) 자기소개서 가이드 (꼭 지켜야 할 작성 원칙):
+                5. 작성 가이드  
                 {cover_letter_guide}
 
-                6) 자기소개서 작성 시 주의사항 (don'ts):
+                6. 작성 시 피해야 할 내용  
                 {cover_letter_donts}
 
-                **작성 지침**:
-                - 위 정보들을 모두 종합해, 문항에 정확히 답하되, {char_limit}자 이내로 작성해야 함.
-                - 글자수 제한을 초과하지 않도록 주의.
-                - 논리적인 흐름과 간결한 문장, 적극적 표현을 사용.
-                - 불필요한 말줄임표, 형식적 문구를 지양.
+                ---
 
-                출력 형식:
-                - 최종 자기소개서 초안만 출력 (여는/닫는 태그, 추가 설명 없이).
+                ## 🧠 작업 순서 및 reasoning 지시
+
+                ### 1단계. 문항 분석
+                - 문항의 질문 의도를 분석해.
+                - 어떤 역량, 가치, 태도를 평가하려는지 파악하고, 아웃라인과 직무 정보에서 그에 맞는 키워드를 정리해.
+
+                ### 2단계. 핵심 메시지 설계
+                - STAR 경험과 문항/직무 요구사항을 연결해, 자기소개서에서 전하고자 하는 핵심 메시지를 한 문장으로 정의해.
+                - 이 메시지를 자기소개서의 중심 주제로 삼아.
+
+                ### 3단계. 자기소개서 구성 설계
+                - 다음 구조를 따라 자기소개서를 설계해:
+                1. 도입: 직무 및 회사에 관심을 갖게 된 계기, 연결된 가치
+                2. 본문: STAR 경험 중심으로 문제 해결 과정과 직무 관련 역량 강조
+                3. 결론: 향후 커리어 계획, 직무/회사에 어떻게 기여할 수 있는지
+
+                - 각 파트에 핵심 키워드(기술력, 문제 해결, 책임감, 협업 등)를 자연스럽게 포함시켜.
+
+                ### 4단계. 스타일 가이드 확인
+                - 글자 수: {char_limit}자 이내, 최소 90% 이상
+                - 어조: 간결하고 명확한 표현 사용, 말줄임표나 형식적인 표현 금지
+                - 강조: 수치 기반 결과 강조, 회사/직무와의 연결성 부각
+                - 금지사항: {cover_letter_donts} 에 포함된 요소는 절대 사용하지 말 것
+
+                ---
+
+                ## 📝 출력 형식
+
+                - 자기소개서 본문 한 편만 출력할 것
+                - 제목, 설명, 마크업 등은 포함하지 말고 본문만 출력
                 """
 
                 # 5) LLM 호출
