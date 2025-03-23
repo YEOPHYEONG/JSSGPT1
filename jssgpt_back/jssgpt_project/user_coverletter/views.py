@@ -194,12 +194,24 @@ def generate_cover_letter_draft(request, recruit_job_id):
             recruit_job = get_object_or_404(RecruitJob, id=recruit_job_id)
             prompts = CoverLetterPrompt.objects.filter(recruit_job=recruit_job)
 
+            # 1) CoverLetterGuide 가져오기 (예: 1개만 있다고 가정)
+            try:
+                cover_letter_guide_obj = CoverLetterGuide.objects.first()
+                cover_letter_donts = cover_letter_guide_obj.cover_letter_donts
+                cover_letter_guide = cover_letter_guide_obj.cover_letter_guide
+            except:
+                # 가이드가 없다면 공백 문자열로 처리
+                cover_letter_donts = ""
+                cover_letter_guide = ""
+
             for prompt in prompts:
                 cover_letter = UserCoverLetter.objects.get(
-                    user=user, recruit_job=recruit_job, prompt=prompt
+                    user=user, 
+                    recruit_job=recruit_job, 
+                    prompt=prompt
                 )
                 star_experience = cover_letter.selected_starexperience
-                # selected_starexperience가 없으면, recommended_starexperience 중 첫 번째를 선택하도록 함
+                # 2) selected_starexperience가 없으면 recommended_starexperience 중 첫 번째 자동선택
                 if not star_experience:
                     recommended = cover_letter.recommended_starexperience.first()
                     if recommended:
@@ -207,24 +219,76 @@ def generate_cover_letter_draft(request, recruit_job_id):
                         cover_letter.save()
                         star_experience = recommended
                     else:
-                        return JsonResponse({'error': f"No STAR experience selected for prompt {prompt.id}"}, status=400)
+                        return JsonResponse(
+                            {'error': f"No STAR experience selected for prompt {prompt.id}"},
+                            status=400
+                        )
 
+                # 3) 문항 글자수 제한 가져오기 (없으면 1000으로 가정)
+                char_limit = prompt.limit if prompt.limit else 1000
+
+                # 4) LLM 프롬프트 구성
                 prompt_text = f"""
-                이제 {prompt.outline}를 바탕으로 문항별로 작성해줘. 다음 요소들을 모두 반영해야 해:
+                아래의 정보를 바탕으로, **글자수 {char_limit}자 이내**로 자기소개서 초안을 작성해주세요.
 
-                - 앞서 조사한 {recruit_job.description}, {recruit_job.key_roles}, {recruit_job.required_skills}, {recruit_job.related_technologies}, {recruit_job.soft_skills}, {recruit_job.key_strengths} 중 해당 문항에 relevant한 부분을 포함하기.
-                - 해당 문항에 매칭된 {star_experience}을 구체적인 사례로 서술하기 (STAR 구조에서 도출한 내용 활용).
-                - **자기소개서 가이드라인**에서 제시한 어조나 작성 원칙 지키기 (논리적 흐름, 적극적 표현, 간결한 문장 등).
-                - 문항에서 요구하는 질문에 정확히 답하기.
+                1) 문항 내용 (question text):
+                "{prompt.question_text}"
+
+                2) AI가 미리 만든 문항 개요 (outline):
+                "{prompt.outline}"
+
+                3) 선택된 STAR 경험:
+                - 제목: {star_experience.title}
+                - 상황(Situation): {star_experience.situation}
+                - 과제(Task): {star_experience.task}
+                - 행동(Action): {star_experience.action}
+                - 결과(Result): {star_experience.result}
+
+                4) 채용 직무 정보:
+                - 직무 설명: {recruit_job.description}
+                - 핵심 역할: {recruit_job.key_roles}
+                - 요구 역량: {recruit_job.required_skills}
+                - 관련 기술: {recruit_job.related_technologies}
+                - 소프트 스킬: {recruit_job.soft_skills}
+                - 필요 강점: {recruit_job.key_strengths}
+
+                5) 자기소개서 가이드 (꼭 지켜야 할 작성 원칙):
+                {cover_letter_guide}
+
+                6) 자기소개서 작성 시 주의사항 (don'ts):
+                {cover_letter_donts}
+
+                **작성 지침**:
+                - 위 정보들을 모두 종합해, 문항에 정확히 답하되, {char_limit}자 이내로 작성해야 함.
+                - 글자수 제한을 초과하지 않도록 주의.
+                - 논리적인 흐름과 간결한 문장, 적극적 표현을 사용.
+                - 불필요한 말줄임표, 형식적 문구를 지양.
+
+                출력 형식:
+                - 최종 자기소개서 초안만 출력 (여는/닫는 태그, 추가 설명 없이).
                 """
+
+                # 5) LLM 호출
                 response = llm.predict(prompt_text)
                 logger.info(f"LLM draft response for prompt {prompt.id}: {response}")
+
+                # 6) 혹시 LLM 응답이 제한 초과할 경우, 잘라내기 (필요 시)
+                #    -> 프로젝트 성격에 따라 2차 LLM 호출로 "축약" 시킬 수도 있음
+                if len(response) > char_limit:
+                    response = response[:char_limit]
+                    logger.warning(
+                        f"Truncated LLM response for prompt {prompt.id} to {char_limit} chars."
+                    )
+
+                # 7) DB 저장
                 cover_letter.content = response
                 cover_letter.draft = False
                 cover_letter.save()
 
+            # 8) 생성된 초안 중 첫 번째 커버레터 편집화면으로 이동
             first_cover_letter = UserCoverLetter.objects.filter(
-                user=user, recruit_job=recruit_job
+                user=user, 
+                recruit_job=recruit_job
             ).first()
             if first_cover_letter:
                 return redirect('user_coverletter:edit_cover_letter', pk=first_cover_letter.pk)
@@ -232,6 +296,7 @@ def generate_cover_letter_draft(request, recruit_job_id):
         except Exception as e:
             logger.error(f"Error generating drafts for recruit_job_id {recruit_job_id}: {e}")
             return JsonResponse({'error': 'Error generating drafts.'}, status=500)
+
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=400)
 
