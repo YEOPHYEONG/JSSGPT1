@@ -1,6 +1,5 @@
-// src/pages/EssayWrite.jsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import classNames from 'classnames';
 import axios from 'axios';
 import styles from './EssayWrite.module.css';
@@ -11,16 +10,13 @@ import Footer from '../components/Footer/Footer';
 
 // 자동 저장 API 함수
 async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content) {
-  console.log(
-    `[AutoSave] company=${companyName}, recruitment=${recruitmentTitle}, promptId=${promptId}, content=${content}`
-  );
   const csrfToken = getCookie('csrftoken');
   return axios.put(
     `/api/cover-letter/update-content/`,
     {
       prompt_id: promptId,
       recruit_job_id: recruitJobId,
-      content: content,
+      content,
     },
     {
       withCredentials: true,
@@ -35,30 +31,58 @@ async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJob
 function EssayWrite() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { companyName, recruitmentTitle, questions, recruitJobId } = location.state || {};
+  const [searchParams] = useSearchParams();
+  const recruitJobIdFromQuery = searchParams.get("recruitJobId");
 
-  useEffect(() => {
-    if (!companyName || !recruitmentTitle || !questions || !recruitJobId) {
-      const timer = setTimeout(() => {
-        window.location.reload();
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [companyName, recruitmentTitle, questions, recruitJobId]);
+  // 최초 state에서 받아오려 시도
+  const {
+    companyName: initialCompanyName,
+    recruitmentTitle: initialRecruitmentTitle,
+    questions: initialQuestions,
+    recruitJobId: initialRecruitJobId,
+  } = location.state || {};
 
-  if (!companyName || !recruitmentTitle || !questions || !recruitJobId) {
-    return <p>필수 정보가 부족합니다. 5초 후에 다시 시도합니다...</p>;
-  }
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const initialContents = questions.map(q => q.content || '');
-  const [essayContents, setEssayContents] = useState(initialContents);
+  const [companyName, setCompanyName] = useState(initialCompanyName);
+  const [recruitmentTitle, setRecruitmentTitle] = useState(initialRecruitmentTitle);
+  const [recruitJobId, setRecruitJobId] = useState(initialRecruitJobId || recruitJobIdFromQuery);
+  const [questions, setQuestions] = useState(initialQuestions || []);
   const [coverContentMap, setCoverContentMap] = useState({});
+  const [essayContents, setEssayContents] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isPolling, setIsPolling] = useState(true);
   const [typingTimer, setTypingTimer] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState('');
   const [isComposing, setIsComposing] = useState(false);
 
+  // ✅ fallback: location.state 없을 경우 백엔드 fetch
+  useEffect(() => {
+    if ((!initialCompanyName || !initialRecruitmentTitle || !initialQuestions) && recruitJobId) {
+      axios.get(`/api/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
+        withCredentials: true,
+      })
+      .then(res => {
+        const data = res.data;
+        const hasContent = Object.values(data).some(content => content && content.trim().length > 0);
+        if (hasContent) {
+          setCoverContentMap(data);
+          // 여기서 필요한 질문 정보도 임의 생성 (question_text는 알 수 없으므로 placeholder 사용)
+          const formattedQuestions = Object.keys(data).map((id, idx) => ({
+            id: parseInt(id),
+            question_text: `질문 ${idx + 1}`,
+            content: data[id],
+            limit: 1000,
+          }));
+          setQuestions(formattedQuestions);
+        }
+        setIsPolling(false);
+      })
+      .catch(err => {
+        console.error("Fallback fetch failed:", err);
+      });
+    }
+  }, [initialCompanyName, initialRecruitmentTitle, initialQuestions, recruitJobId]);
+
+  // 폴링
   useEffect(() => {
     const interval = setInterval(() => {
       axios.get(`/api/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
@@ -97,9 +121,9 @@ function EssayWrite() {
     }
   }, [coverContentMap, activeIndex, mergedQuestions]);
 
-  const currentContent = essayContents[activeIndex];
-  const currentLimit = mergedQuestions[activeIndex]?.limit;
-  const currentQuestionText = mergedQuestions[activeIndex].question_text;
+  const currentContent = essayContents[activeIndex] || '';
+  const currentLimit = mergedQuestions[activeIndex]?.limit || 1000;
+  const currentQuestionText = mergedQuestions[activeIndex]?.question_text || '';
 
   const handleAutoSave = useCallback(async () => {
     if (currentContent.trim().length === 0) return;
@@ -107,7 +131,6 @@ function EssayWrite() {
     try {
       const promptId = mergedQuestions[activeIndex].id;
       await saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, currentContent);
-      console.log("Auto-save successful");
       setLastSavedContent(currentContent);
     } catch (error) {
       console.error("Auto-save failed:", error);
@@ -169,8 +192,8 @@ function EssayWrite() {
         <div className={styles.essayContainer}>
           <div className={styles.leftSection}>
             <div className={styles.topBar}>
-              <span className={styles.companyName}>{companyName}</span>
-              <span className={styles.recruitmentTitle}> 💼 채용직무 : {recruitmentTitle}</span>
+              <span className={styles.companyName}>{companyName || '회사명 없음'}</span>
+              <span className={styles.recruitmentTitle}> 💼 채용직무 : {recruitmentTitle || '직무명 없음'}</span>
             </div>
             <div className={styles.essayWriteArea}>
               <div className={styles.questionTabs}>
