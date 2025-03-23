@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import classNames from 'classnames';
 import axios from 'axios';
@@ -50,11 +50,11 @@ function EssayWrite() {
   const [essayContents, setEssayContents] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPolling, setIsPolling] = useState(true);
-  const [typingTimer, setTypingTimer] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState('');
   const [isComposing, setIsComposing] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // ✅ 추가
+  const [isSaving, setIsSaving] = useState(false);
+  const typingTimerRef = useRef(null); // useRef로 타이머 관리
 
   useEffect(() => {
     if ((!initialCompanyName || !initialRecruitmentTitle || !initialQuestions) && recruitJobId) {
@@ -126,7 +126,14 @@ function EssayWrite() {
   const handleAutoSave = useCallback(async () => {
     const promptId = mergedQuestions[activeIndex]?.id;
     const content = essayContents[activeIndex];
-    if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent || isSaving || isComposing) return;
+    if (
+      isSaving ||
+      isComposing ||
+      !promptId ||
+      !content ||
+      content.trim().length === 0 ||
+      content === lastSavedContent
+    ) return;
 
     try {
       setIsSaving(true);
@@ -150,7 +157,7 @@ function EssayWrite() {
     } finally {
       setIsSaving(false);
     }
-  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle, mergedQuestions, isSaving]);
+  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle, mergedQuestions, isSaving, isComposing]);
 
   const handleChange = (e) => {
     const newContent = e.target.value;
@@ -160,11 +167,10 @@ function EssayWrite() {
       return newArr;
     });
     if (isComposing) return;
-    if (typingTimer) clearTimeout(typingTimer);
-    const newTimer = setTimeout(() => {
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = setTimeout(() => {
       handleAutoSave();
-    }, 5000); // ⏱️ 5초로 증가
-    setTypingTimer(newTimer);
+    }, 5000);
   };
 
   const handleCompositionStart = () => setIsComposing(true);
@@ -181,10 +187,10 @@ function EssayWrite() {
 
   useEffect(() => {
     return () => {
-      if (typingTimer) clearTimeout(typingTimer);
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       handleAutoSave();
     };
-  }, [typingTimer, handleAutoSave]);
+  }, [handleAutoSave]);
 
   const handleGoBack = () => {
     handleAutoSave();
