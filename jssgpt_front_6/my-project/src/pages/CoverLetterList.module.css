@@ -6,20 +6,68 @@ body {
 
 .container {
   font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;  
-  background-color: #ffffff;
+  font-weight: 600;
+  background-color: #f2f4f5; 
     min-height: 100vh;
     padding: 1rem;
-    color: #ffffff;
+    color: #777;
+
   }
   
   .pageTitle {
     font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: #000000;
-    text-shadow: 1px 4px 10px #00000075;
+    color: rgb(0, 0, 0);
+    text-shadow: 0px 0px 0px #000000;
   }
+  
+
+.subtitle {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.searchContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchInput {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  flex-grow: 0;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #77777755;
+  border-radius: 5px;
+}
+
+.searchButton {
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #feee7d;
+  border:1px solid hsl(53, 98%, 44%);
+  color: #000000;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.searchButton:hover {
+  opacity: 0.8;
+}
+
+.separator {
+  border: 0;
+  height: 2px;
+  background: #ddd;
+  margin: 2rem 0;
+}
   
   .error {
     color: #ff6b6b;
@@ -29,23 +77,44 @@ body {
   /* 카드들을 격자 형태로 배치 */
   .cardGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, minmax(250px, 1fr));
     gap: 1rem;
+    justify-items: stretch; /* 가운데 정렬 (옵션) */
+    align-items: stretch;
   }
+
+  /* 화면이 900px 이하로 작아지면 카드 2개씩 */
+@media (max-width: 900px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 화면이 600px 이하로 작아지면 카드 1개씩 */
+@media (max-width: 600px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}
   
   /* 개별 카드 */
   .card {
-    background-color: #0056b3;
-    border: 2px solid #817c7c;
+    background-color:  #e0f2fe;
+    border: 2px solid  #dddddd;
     border-radius: 8px;
     padding: 1rem;
     cursor: pointer;
-    transition: opacity 0.2s ease;
-    box-shadow: 0 2px 5px #000000;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 2px  #00000080;
+    overflow: auto; /* 내용이 넘칠 경우 숨김 처리 (필요 시) */
+    padding: 1rem;
+    margin-top: 1rem;
+    height: 100%;
   }
   
   .card:hover {
-    opacity: 0.9;
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
   
   /* 카드 상단: 기업명과 마지막 작성일 */
@@ -55,39 +124,70 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-    text-shadow: 1px 2px 5px #000000
+    
   }
   
   .companyName {
+    margin-bottom: 0.5rem;
     font-size: 2rem;
     font-weight: bold;
-    color:rgb(255, 255, 255)
+    color:#000000;
+    background-color: #feef7d00;
+    border-radius: 8px;
+    padding: 1px 10px; /* 상하 5px, 좌우 15px 여백 추가 */
+    display: inline-block;
+    
   }
   
   .updatedAt {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 700;
-    opacity: 0.8;
-    color:#ffffff
+    opacity: 0.9;
+    color:#777;
+  }
+
+  .separator {
+    border: 0;
+    height: 3px;
+    background: #ddd;
+    margin: 0.5rem 0;
   }
   
   /* 카드 하단 */
   .cardBody {
-    margin-top: 0.5rem;
+    margin-top: 0.9rem;
   }
   
   .recruitJob {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color:#f2ff65;
-    text-shadow: 0 1px 5px #0000008f
+    font-size: 1.2rem;
+    margin-bottom: 1.4rem;
+    font-weight: 600;
+    color:#000000;
+    background-color: rgba(17, 24, 39, 0);
+    border-radius: 8px;
+    padding: 1px 10px; /* 상하 5px, 좌우 15px 여백 추가 */
+    display: inline-block;
+    
   }
   
   .essayQuestion {
-    font-size: 1.2rem;
-    margin-bottom: 0.25rem;
-    color:#f0f0f0;
-    text-shadow: 0 1px 5px #0000008f
+    font-size: 1.rem;
+    font-weight: 300;
+    margin-bottom: 0.8rem;
+    color:#000000;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    padding: 1px 10px; /* 상하 5px, 좌우 15px 여백 추가 */
+    width: fit-content;
+    
   }
   
+  /* CoverLetterList.module.css */
+.essayPreview {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+  background-color: #fafafa;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+}
