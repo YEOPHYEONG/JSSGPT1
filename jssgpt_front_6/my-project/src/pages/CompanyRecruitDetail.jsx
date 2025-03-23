@@ -55,15 +55,20 @@ function CompanyRecruitDetail() {
 
   const handleGenerationComplete = () => {
     setShowModal(false);
+  
+    // prompts를 fetch하거나, 최소한 id/question_text만이라도 포함시켜야 안정적
+    const questions = selectedJob.essays || [];
+  
     navigate('/essay', {
       state: {
         companyName: recruitData.company_name,
         recruitmentTitle: selectedJob.title,
-        questions: selectedJob.essays,
+        recruitJobId: selectedJob.id, // ✅ 필수!
+        questions, // ✅ questions 비어있어도 최소 []
       },
     });
   };
-
+  
   if (error) return <div>Error: {error.message}</div>;
 
   if (!recruitData) {
