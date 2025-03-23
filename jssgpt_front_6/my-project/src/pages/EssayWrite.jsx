@@ -10,6 +10,7 @@ import Footer from '../components/Footer/Footer';
 
 // 자동 저장 API 함수
 async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content) {
+  console.log('🔄 저장 시도:', { promptId, recruitJobId, content });
   const csrfToken = getCookie('csrftoken');
   return axios.put(
     `/api/cover-letter/update-content/`,
