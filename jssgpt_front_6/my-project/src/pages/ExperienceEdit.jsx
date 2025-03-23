@@ -18,7 +18,6 @@ const ExperienceEdit = () => {
     fetchStarExperiences();
   }, []);
 
-  // 백엔드에서 STARExperience 목록을 가져옴
   const fetchStarExperiences = async () => {
     try {
       const response = await axios.get(
@@ -36,26 +35,24 @@ const ExperienceEdit = () => {
     setDropdownValue(e.target.value);
   };
 
-  // 각 항목의 필드 변경 처리 (title 포함)
   const handleFieldChange = (index, field, value) => {
-    const updatedExperiences = [...starExperiences];
-    updatedExperiences[index] = { ...updatedExperiences[index], [field]: value };
-    setStarExperiences(updatedExperiences);
+    const updated = [...starExperiences];
+    updated[index] = { ...updated[index], [field]: value };
+    setStarExperiences(updated);
   };
 
-  // 수정한 내용을 백엔드에 저장
   const handleSave = async (id, index) => {
     try {
       const csrfToken = getCookie('csrftoken');
-      const experience = starExperiences[index];
+      const exp = starExperiences[index];
       const response = await axios.put(
         `/api/user-experience/star-experiences/${id}/update/`,
         {
-          title: experience.title,
-          situation: experience.situation,
-          task: experience.task,
-          action: experience.action,
-          result: experience.result
+          title: exp.title,
+          situation: exp.situation,
+          task: exp.task,
+          action: exp.action,
+          result: exp.result
         },
         {
           headers: {
@@ -67,7 +64,7 @@ const ExperienceEdit = () => {
       );
       if (response.data.message) {
         alert("저장되었습니다!");
-        fetchStarExperiences(); // 변경사항 반영을 위해 재조회
+        fetchStarExperiences();
       } else {
         alert("저장 실패하였습니다.");
       }
@@ -77,7 +74,6 @@ const ExperienceEdit = () => {
     }
   };
 
-  // 2. 경험 추가하기: 새 STARExperience를 DB에 생성 -> 화면 최상단에 추가
   const handleAddExperience = async () => {
     try {
       const csrfToken = getCookie('csrftoken');
@@ -98,9 +94,7 @@ const ExperienceEdit = () => {
           withCredentials: true,
         }
       );
-      // 서버에서 새로 생성된 객체를 반환한다고 가정
-      const newExp = response.data; 
-      // 새 경험을 최상단에 삽입
+      const newExp = response.data;
       setStarExperiences((prev) => [newExp, ...prev]);
     } catch (err) {
       console.error(err);
@@ -108,52 +102,49 @@ const ExperienceEdit = () => {
     }
   };
 
-    // ✅ 경험 삭제 기능
-    const handleDeleteExperience = (index) => {
-      if (window.confirm("이 경험을 삭제하시겠습니까?")) {
-        const deleted = starExperiences[index];
-        setDeletedExperiences([...deletedExperiences, deleted]);
-        setStarExperiences(starExperiences.filter((_, i) => i !== index));
-      }
-    };
-  
-    // ✅ 경험 복원 기능
-    const handleRestoreExperience = (index) => {
-      const restored = deletedExperiences[index];
-      setStarExperiences([...starExperiences, restored]);
-      setDeletedExperiences(deletedExperiences.filter((_, i) => i !== index));
-    };
+  const handleDeleteExperience = (index) => {
+    if (window.confirm("이 경험을 삭제하시겠습니까?")) {
+      const deleted = starExperiences[index];
+      setDeletedExperiences([...deletedExperiences, deleted]);
+      setStarExperiences(starExperiences.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleRestoreExperience = (index) => {
+    const restored = deletedExperiences[index];
+    setStarExperiences([...starExperiences, restored]);
+    setDeletedExperiences(deletedExperiences.filter((_, i) => i !== index));
+  };
 
   return (
     <>
       <Header />
       <div className={styles.container}>
-        {/* 상단 헤더 부분(제목 + '경험 추가하기' 버튼) */}
         <div className={styles.headerBar}>
           <h1 className={styles.title}>경험 편집</h1>
           <button className={styles.addButton} onClick={handleAddExperience}>
-            경험 추가하기
+            ➕ 경험 추가하기
           </button>
         </div>
 
+        <p className={styles.subtitle}>
+          내 경험, 내가 다듬는다! ✍️ 경험을 수정하고 자소서를 완성해봐요!💫💯
+        </p>
+
+        <hr className={styles.separator} />
+
         {error && <p className={styles.error}>{error}</p>}
 
-        {/* 1. 드롭다운메뉴 (현재 기능은 비워둠) */}
         <select
           className={styles.dropdown}
           value={dropdownValue}
           onChange={handleDropdownChange}
         >
           <option value="">필요한옵션기능추가예정</option>
-          {/* 추후에 필요한 옵션이 있다면 여기에 추가 */}
         </select>
 
-        {/* 2. 경험별 STAR구조 창 (수정 가능) */}
         {starExperiences.map((exp, index) => (
           <div key={exp.id} className={styles.starContainer}>
-             
-
-            {/* Title도 편집 가능 */}
             <div className={styles.starItem}>
               <label className={styles.starLabel}>제목</label>
               <input
@@ -201,24 +192,34 @@ const ExperienceEdit = () => {
             </div>
 
             <div className={styles.buttonContainer}>
-               <button
-               className={styles.saveButton}
-                 onClick={() => handleSave(exp.id, index)}>💾저장</button>
-               <button 
-               className={styles.deleteButton} 
-                onClick={() => handleDeleteExperience(index)}>🗑️제거</button>
+              <button
+                className={styles.saveButton}
+                onClick={() => handleSave(exp.id, index)}
+              >
+                💾저장
+              </button>
+              <button
+                className={styles.deleteButton}
+                onClick={() => handleDeleteExperience(index)}
+              >
+                🗑️제거
+              </button>
             </div>
           </div>
         ))}
 
-      {/* ✅ 삭제된 경험 복원 UI */}
-      {deletedExperiences.length > 0 && (
+        {deletedExperiences.length > 0 && (
           <div className={styles.restoreContainer}>
             <h3>삭제된 경험</h3>
             {deletedExperiences.map((exp, index) => (
               <div key={index} className={styles.deletedExperience}>
                 <span>{exp.title}</span>
-                <button className={styles.restoreButton} onClick={() => handleRestoreExperience(index)}>복원</button>
+                <button
+                  className={styles.restoreButton}
+                  onClick={() => handleRestoreExperience(index)}
+                >
+                  복원
+                </button>
               </div>
             ))}
           </div>

@@ -7,7 +7,7 @@ body {
 
 /* 전체 컨테이너 */
 .container {
-    background-color: #ffffff;
+    background-color:  #f2f4f5;
     min-height: 100vh;
     padding: 1rem;
     color: #e0e0e0;
@@ -22,31 +22,49 @@ body {
   
   /* 페이지 제목 */
   .title {
-    font-size: 2rem;
+    font-size: 2.2rem;
+    font-weight: bold;
     margin-bottom: 1rem;
-    margin-top: 0;
     color:#000000;
-    text-shadow: 1px 2px 7px #00000059;
+   
+  }
+
+  .subtitle {
+    display: inline-block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #785dc8;
+    margin-bottom: 1.5rem;
+    border: 7px solid #ddd;
+    padding: 0.5rem;
+    border-radius: 10px;
   }
   
+  .separator {
+    border: 0;
+    height: 2px;
+    background: #ddd;
+    margin: 2rem 0;
+  }
+
   /* '경험 추가하기' 버튼 */
   .addButton {
     font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
     font-weight: 800;
-    background-color: #DD9570;
-    border: 1.5px solid #0a357658;
-    color: #ffffff;
+    background-color: #feee7d;
+    border:1px solid hsl(53, 98%, 44%);
+    color: #000000;
     padding: 0.7rem 1.2rem;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
     margin-bottom: 1rem;
-    text-shadow: 1px 1px 2px #000000;
+    
+    
   }
   
   .addButton:hover {
-    background-color: #437dd4;
-    opacity: 0.9;
+    opacity: 0.8;
   }
   
   /* 에러 메시지 */
@@ -65,11 +83,12 @@ body {
   
   /* STAR 경험 전체 컨테이너 */
   .starContainer {
-    background-color: #DD9570;
+    background-color: #e0f2fe;
+    border: 1px solid  #1118271a;
     border-radius: 8px;
     padding: 1.2rem;
     margin-bottom: 1.5rem;
-    box-shadow: 1px 2px 8px #000000;
+    box-shadow: 0px 1px 2px #000000;
   }
   
   /* 상황, 과업, 행동, 결과 각각의 항목 */
@@ -87,8 +106,8 @@ body {
     font-weight: bold;
     font-size: 1.2rem;
     margin-right: 1rem;
-    color: #e0e0e0;
-    text-shadow: 1px 1px 4px #00000086;
+    color: #000000;
+    
   }
   
   /* 수정 가능한 텍스트/입력 */
@@ -97,9 +116,9 @@ body {
     font-size: 1rem;
     font-weight: 600;
     flex: 1;
-    background-color: #eeeeee;
+    background-color: #f2f4f5;
     color: #222222;
-    border: 2.5px solid #969494;
+    border: 1px solid rgba(17, 24, 39, 0.5);
     padding: 0.6rem;
     margin-left: 0.5rem;
     border-radius: 6px;
@@ -110,12 +129,12 @@ body {
   
 .starInput:focus {
     outline: none;
-    border-color: #34d399;
-    box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+    border-color: #feee7d;
+    box-shadow: 0 0 3px hsl(53, 98%, 44%);
   }
 
   .starInput::placeholder {
-    color: #999;
+    color: #f2f4f5;
     font-style: italic;
   }
 
@@ -132,27 +151,27 @@ body {
     font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
     font-weight: 600;
     display: inline-block;
-    background-color: rgba(0, 0, 0, 0.4); /* 검은색, 투명도 40% */
+    background-color: #00000080; /* 검은색, 투명도 40% */
     border: none;
     color: #ffffff;
     padding: 0.5rem 1rem;
     border-radius: 10px;
     cursor: pointer;
     margin-top: 0.5rem;
-    border: 1.5px solid #185ee834;
-    text-shadow: 1px 2px 2px #000000
+    border: 1px solid #f5f6fa;
+    text-shadow: 0px 1px 2px #000000;
   }
   
   .saveButton:hover {
-    background-color: #4caf50;
-    opacity: 0.9;
+    
+    opacity: 0.8;
   }
   
   
 
 .deleteButton:hover {
-  background-color: #ff4c4c;
-  opacity: 0.9;
+  
+  opacity: 0.8;
 }
 
  /* ✅ 삭제된 경험 복원 UI 개선 */
@@ -195,3 +214,12 @@ body {
   background-color: #ffaa00;
 }
 
+@media (max-width: 768px) {
+  .starItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .starLabel {
+    margin-bottom: 0.5rem;
+  }
+}
