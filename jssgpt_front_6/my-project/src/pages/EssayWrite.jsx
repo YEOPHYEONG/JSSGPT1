@@ -8,7 +8,6 @@ import { getCookie } from '../utils/utils';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 
-// 자동 저장 API 함수
 async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content) {
   const csrfToken = getCookie('csrftoken');
   console.log('[AutoSave] 시도:', { promptId, recruitJobId, content, csrfToken });
@@ -36,7 +35,6 @@ function EssayWrite() {
   const [searchParams] = useSearchParams();
   const recruitJobIdFromQuery = searchParams.get("recruitJobId");
 
-  // 최초 state에서 받아오려 시도
   const {
     companyName: initialCompanyName,
     recruitmentTitle: initialRecruitmentTitle,
@@ -55,8 +53,8 @@ function EssayWrite() {
   const [typingTimer, setTypingTimer] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState('');
   const [isComposing, setIsComposing] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false); // ✅ 추가
 
-  // ✅ fallback: location.state 없을 경우 백엔드 fetch
   useEffect(() => {
     if ((!initialCompanyName || !initialRecruitmentTitle || !initialQuestions) && recruitJobId) {
       axios.get(`/api/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
@@ -67,7 +65,6 @@ function EssayWrite() {
         const hasContent = Object.values(data).some(content => content && content.trim().length > 0);
         if (hasContent) {
           setCoverContentMap(data);
-          // 여기서 필요한 질문 정보도 임의 생성 (question_text는 알 수 없으므로 placeholder 사용)
           const formattedQuestions = Object.keys(data).map((id, idx) => ({
             id: parseInt(id),
             question_text: `질문 ${idx + 1}`,
@@ -84,7 +81,6 @@ function EssayWrite() {
     }
   }, [initialCompanyName, initialRecruitmentTitle, initialQuestions, recruitJobId]);
 
-  // 폴링
   useEffect(() => {
     const interval = setInterval(() => {
       axios.get(`/api/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
@@ -114,14 +110,14 @@ function EssayWrite() {
   }, [questions, coverContentMap]);
 
   useEffect(() => {
-    if (Object.keys(coverContentMap).length > 0) {
+    if (!hasInitialized && Object.keys(coverContentMap).length > 0) {
       const newContents = mergedQuestions.map(q => coverContentMap[q.id] || q.content || '');
       setEssayContents(newContents);
-      // 여기서 activeIndex를 deps에 넣지 않음 → 탭 이동 시 초기화 방지
-      setLastSavedContent(newContents[activeIndex]); 
+      setLastSavedContent(newContents[activeIndex]);
+      setHasInitialized(true); // ✅ 최초 1회만 초기화
     }
-  }, [coverContentMap, mergedQuestions]); // ⛔ activeIndex 제거됨
-  
+  }, [coverContentMap, mergedQuestions, activeIndex, hasInitialized]);
+
   const currentContent = essayContents[activeIndex] || '';
   const currentLimit = mergedQuestions[activeIndex]?.limit || 1000;
   const currentQuestionText = mergedQuestions[activeIndex]?.question_text || '';
@@ -130,29 +126,28 @@ function EssayWrite() {
     const promptId = mergedQuestions[activeIndex]?.id;
     const content = essayContents[activeIndex];
     if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent) return;
-  
+
     try {
       await saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content);
       setLastSavedContent(content);
-  
-      // ✅ 커버맵 + 에세이 상태 동시 갱신
+
       setCoverContentMap(prev => ({
         ...prev,
         [promptId]: content,
       }));
-  
+
       setEssayContents(prev => {
         const updated = [...prev];
         updated[activeIndex] = content;
         return updated;
       });
-  
+
       console.log("✅ Auto-save success:", promptId);
     } catch (error) {
       console.error("❌ Auto-save failed:", error);
     }
-  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle]);
-  
+  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle, mergedQuestions]);
+
   const handleChange = (e) => {
     const newContent = e.target.value;
     setEssayContents(prev => {
@@ -176,10 +171,10 @@ function EssayWrite() {
 
   const handleTabClick = (index) => {
     handleAutoSave();
-    setLastSavedContent(essayContents[index]); // ✅ 새 탭 기준 저장 비교 초기화
+    setLastSavedContent(essayContents[index]);
     setActiveIndex(index);
   };
-  
+
   useEffect(() => {
     return () => {
       if (typingTimer) clearTimeout(typingTimer);
