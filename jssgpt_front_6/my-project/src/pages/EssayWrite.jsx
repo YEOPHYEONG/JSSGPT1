@@ -127,17 +127,32 @@ function EssayWrite() {
   const currentQuestionText = mergedQuestions[activeIndex]?.question_text || '';
 
   const handleAutoSave = useCallback(async () => {
-    if (currentContent.trim().length === 0) return;
-    if (currentContent === lastSavedContent) return;
+    const promptId = mergedQuestions[activeIndex]?.id;
+    const content = essayContents[activeIndex];
+    if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent) return;
+  
     try {
-      const promptId = mergedQuestions[activeIndex].id;
-      await saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, currentContent);
-      setLastSavedContent(currentContent);
+      await saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content);
+      setLastSavedContent(content);
+  
+      // ✅ 커버맵 + 에세이 상태 동시 갱신
+      setCoverContentMap(prev => ({
+        ...prev,
+        [promptId]: content,
+      }));
+  
+      setEssayContents(prev => {
+        const updated = [...prev];
+        updated[activeIndex] = content;
+        return updated;
+      });
+  
+      console.log("✅ Auto-save success:", promptId);
     } catch (error) {
-      console.error("Auto-save failed:", error);
+      console.error("❌ Auto-save failed:", error);
     }
-  }, [companyName, recruitmentTitle, activeIndex, currentContent, mergedQuestions, recruitJobId, lastSavedContent]);
-
+  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle]);
+  
   const handleChange = (e) => {
     const newContent = e.target.value;
     setEssayContents(prev => {
