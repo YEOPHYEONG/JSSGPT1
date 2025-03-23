@@ -1,8 +1,26 @@
 /* src/components/Footer/Footer.module.css */
 .footer {
-  background-color: #0056b3;
-  color: #ffffff;
+  background-color: #f2f4f500;
+  font-weight:300;
+  color: #000000;
   text-align: center;
   padding: 10px 0;
   margin-top: auto; /* 화면 아래쪽에 위치 */
+
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    color: #000000;
+    text-shadow: 0 0 5px #ffd700, 0 0 10px #ffa500;
+  }
+  50% {
+    color: #000000ce;
+    text-shadow: 0 0 10px #fff, 0 0 20px #ffd700;
+  }
+}
+
+.sparkle {
+  animation: sparkle 2s infinite;
+  font-weight: bold;
 }
