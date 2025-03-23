@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from langchain_community.chat_models import ChatOpenAI
 from .models import UserCoverLetter
-from langchain_app.models import RecruitJob, CoverLetterPrompt
+from langchain_app.models import RecruitJob, CoverLetterPrompt, CoverLetterGuide
 from user_experience.models import STARExperience
 from django.contrib.auth.decorators import login_required
 import json
@@ -40,13 +40,54 @@ def create_cover_letter(request, recruit_job_id):
                 star_experiences = STARExperience.objects.filter(user=user)
                 star_texts = "\n".join([f"{star.title}: {star.situation}" for star in star_experiences])
                 prompt_text = f"""
-                자기소개서 문항의 아웃라인: {prompt.outline}
-                아래의 경험 목록 중, 위 아웃라인을 바탕으로 합격할만한 자기소개서를 쓸 수 있는 경험 ID를 한 개만 선택해줘.
-                경험 목록:
+                너의 목표는 아래 자기소개서 아웃라인에 가장 적합한 경험(STAR 구조 기반)을,  
+                논리적으로 판단하고, 가장 잘 어울리는 하나의 경험 ID만 선택하는 거야.
+
+                다음 단계를 따라 reasoning을 수행한 후,  
+                최종적으로 **가장 적합한 경험 하나의 ID**를 숫자 형태의 JSON 배열로만 반환해줘.
+
+                예: [2]
+
+                ---
+
+                ### [입력 데이터]
+
+                1. 자기소개서 아웃라인:
+                {prompt.outline}
+
+                2. STAR 형식의 경험 목록:
                 {star_texts}
-                결과는 백틱 등을 모두 제거한 숫자 형태의 JSON 배열로 반환해줘.
-                예: [1] 
-                그리고 같은 {cover_letter}
+
+                ---
+
+                ### [작업 단계]
+
+                #### 1단계. 문항 핵심 주제 및 키워드 파악
+                - 아웃라인을 바탕으로 자기소개서 문항의 의도를 분석해.
+                - 이 문항에서 강조해야 할 **핵심 역량**, **핵심 가치**, **필수 기술/태도**를 추출해.
+
+                #### 2단계. 경험과 키워드 매칭
+                - STAR 경험 목록의 각 항목을 읽고, 각 경험이 어떤 역량과 가치를 보여주는지 판단해.
+                - 각 경험이 1단계에서 도출한 핵심 키워드와 얼마나 일치하는지 비교해.
+
+                #### 3단계. 평가 기준에 따라 적합도 판단
+                - 다음 기준을 참고해서 경험 간 우선순위를 판단해:
+                - Salesforce 플랫폼 관련 경험인가?
+                - 기술적 문제 해결 경험이 있는가?
+                - 사용자 요구 분석 및 협업이 포함되어 있는가?
+                - 결과가 구체적이고 측정 가능한가?
+                - 회사의 가치(고객 중심, 책임감, 지속적 학습)와 부합하는가?
+
+                #### 4단계. 최종 선택
+                - 위 기준에 가장 부합하는 **경험 하나의 ID**를 숫자만 포함한 JSON 배열 형식으로 반환해.
+                - 반드시 순수 JSON만 출력하고, 설명이나 기호는 포함하지 마.
+
+                ---
+
+                ### ✅ 출력 예시 (형식)
+
+                ```json
+                [1]
                 """
                 response = llm.predict(prompt_text)
                 # LLM 응답 로깅 추가
@@ -134,7 +175,7 @@ def generate_cover_letter_draft(request, recruit_job_id,):
                     return JsonResponse({'error': f"No STAR experience selected for prompt {prompt.id}"}, status=400)
 
                 prompt_text = f"""
-                이제 {prompt.outline}을 문항별로 작성해줘. 다음 요소들을 모두 반영해야 해:
+                이제 {prompt.outline}를 바탕으로 문항별로 작성해줘. 다음 요소들을 모두 반영해야 해:
 
                 - 앞서 조사한 {recruit_job.description}, {recruit_job.key_roles}, {recruit_job.required_skills}, {recruit_job.related_technologies}, {recruit_job.soft_skills}, {recruit_job.key_strengths} 중 해당 문항에 relevant한 부분을 포함하기.
                 - 해당 문항에 매칭된 {star_experience}을 구체적인 사례로 서술하기 (STAR 구조에서 도출한 내용 활용).
