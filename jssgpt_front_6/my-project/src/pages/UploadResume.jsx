@@ -10,7 +10,7 @@ import Footer from '../components/Footer/Footer';
 const UploadResume = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [error, setError] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false); // 로딩 처리
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
@@ -31,15 +31,16 @@ const UploadResume = () => {
       setError('파일을 선택해주세요.');
       return;
     }
+
     const formData = new FormData();
     formData.append('resume_file', selectedFile);
 
-    setUploading(true);
+    setLoading(true); // 로딩 시작
 
     try {
       const csrfToken = getCookie('csrftoken');
       const response = await axios.post(
-        '/api/user-experience/upload-resume/', // ✅ 변경된 API 경로
+        '/api/user-experience/upload-resume/',
         formData,
         {
           headers: {
@@ -52,7 +53,7 @@ const UploadResume = () => {
 
       if (response.data.message) {
         setSuccessMessage('이력서 업로드가 완료되었습니다!');
-        setTimeout(() => navigate('/experience-edit'), 2000); // ✅ 성공 후 이동 처리
+        setTimeout(() => navigate('/experience-edit'), 2000);
       } else {
         setError('업로드에 실패하였습니다. 다시 시도해주세요.');
       }
@@ -60,9 +61,20 @@ const UploadResume = () => {
       console.error(err);
       setError('서버 오류가 발생하였습니다.');
     } finally {
-      setUploading(false); // ✅ 로딩 상태 해제
+      setLoading(false); // 로딩 종료
     }
   };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingContent}>
+          <div className={styles.spinner}></div>
+          <p className={styles.loadingText}>AI가 이력서를 STAR 구조로 변환 중입니다...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -86,7 +98,6 @@ const UploadResume = () => {
           <p className={styles.subtitle}>2. 업로드된 이력서를 확인하고 이력서 분석을 실행해보세요 (노란버튼)</p>
 
           {error && <p className={styles.error}>{error}</p>}
-          {uploading && <p className={styles.uploading}>업로드 중...</p>}
           {successMessage && <p className={styles.success}>{successMessage}</p>}
           {selectedFile && (
             <p className={styles.fileName}>
@@ -94,8 +105,8 @@ const UploadResume = () => {
             </p>
           )}
 
-          <button type="submit" className={styles.uploadButton} disabled={uploading}>
-            {uploading ? '업로드 중...' : '이력서 분석 START!'}
+          <button type="submit" className={styles.uploadButton} disabled={loading}>
+            이력서 분석 START!
           </button>
         </form>
       </div>

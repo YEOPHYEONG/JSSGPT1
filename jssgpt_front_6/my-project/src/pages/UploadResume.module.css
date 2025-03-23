@@ -98,3 +98,46 @@
     margin-bottom: 6rem;
   }
 }
+
+/* ✅ 로딩 전체 컨테이너 */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f2f4f5;
+  color: #000000;
+  text-align: center;
+}
+
+/* ✅ 로딩 내용 */
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ✅ 로딩 텍스트 */
+.loadingText {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000000;
+}
+
+/* ✅ 로딩 스피너 */
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #000000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ✅ 회전 애니메이션 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
