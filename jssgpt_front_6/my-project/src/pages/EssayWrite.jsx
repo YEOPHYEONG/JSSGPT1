@@ -54,7 +54,7 @@ function EssayWrite() {
   const [isComposing, setIsComposing] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const typingTimerRef = useRef(null); // useRef로 타이머 관리
+  const typingTimerRef = useRef(null);
 
   useEffect(() => {
     if ((!initialCompanyName || !initialRecruitmentTitle || !initialQuestions) && recruitJobId) {
@@ -166,11 +166,13 @@ function EssayWrite() {
       newArr[activeIndex] = newContent;
       return newArr;
     });
+
     if (isComposing) return;
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+
     typingTimerRef.current = setTimeout(() => {
       handleAutoSave();
-    }, 5000);
+    }, 5000); // 타이핑 멈추고 5초 후에만 저장 시도
   };
 
   const handleCompositionStart = () => setIsComposing(true);
@@ -180,6 +182,7 @@ function EssayWrite() {
   };
 
   const handleTabClick = (index) => {
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     handleAutoSave();
     setLastSavedContent(essayContents[index]);
     setActiveIndex(index);
@@ -193,6 +196,7 @@ function EssayWrite() {
   }, [handleAutoSave]);
 
   const handleGoBack = () => {
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     handleAutoSave();
     navigate(-1);
   };
