@@ -8,6 +8,7 @@ from user_experience.models import STARExperience
 from django.contrib.auth.decorators import login_required
 import json
 import logging
+import re
 
 # 로깅 설정
 logger = logging.getLogger('django')
@@ -41,7 +42,7 @@ def create_cover_letter(request, recruit_job_id):
             try:
                 # 이미 추천된 경험은 제외한 STARExperience 조회
                 star_experiences = STARExperience.objects.filter(user=user).exclude(id__in=recommended_ids)
-                # 만약 후보 경험이 없다면 빈 문자열 전달
+                # 후보 경험이 없다면 빈 문자열 전달
                 star_texts = "\n".join([f"{star.title}: {star.situation}" for star in star_experiences]) if star_experiences.exists() else ""
                 prompt_text = f"""
                 너의 목표는 아래 자기소개서 아웃라인에 가장 적합한 경험(STAR 구조 기반)을,  
@@ -96,7 +97,19 @@ def create_cover_letter(request, recruit_job_id):
                 """
                 response = llm.predict(prompt_text)
                 logger.info(f"LLM response for prompt {prompt.id}: {response}")
-                recommended_raw = json.loads(response)
+                # 정규 표현식으로 코드 블록 내 JSON만 추출
+                match = re.search(r"```json\s*(.*?)\s*```", response, re.DOTALL)
+                if match:
+                    json_str = match.group(1)
+                else:
+                    json_str = response.strip()
+
+                try:
+                    recommended_raw = json.loads(json_str)
+                except Exception as e:
+                    logger.error(f"Error parsing JSON for prompt {prompt.id}: {e}")
+                    recommended_raw = []
+
                 new_recommended_ids = []
                 for rec in recommended_raw:
                     if isinstance(rec, dict):
