@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 import datetime
 from .models import Company, Recruitment, RecruitJob, CoverLetterPrompt
 from .tasks import crawl_recruitments_task  # 새로 만든 Celery 태스크
+from .models import CoverLetterGuide
 
 # 크롤링 폼 정의 (기업명 필드 추가 - 여러 개는 쉼표로 구분)
 class CrawlForm(forms.Form):
@@ -63,6 +64,11 @@ class RecruitJobAdmin(admin.ModelAdmin):
 @admin.register(CoverLetterPrompt)
 class CoverLetterPromptAdmin(admin.ModelAdmin):
     list_display = ('id', 'recruit_job', 'question_text', 'created_at')
+
+@admin.register(CoverLetterGuide)
+class CoverLetterGuideAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title', 'content')
 
 admin.site.register(Company)
 admin.site.register(RecruitJob, RecruitJobAdmin)

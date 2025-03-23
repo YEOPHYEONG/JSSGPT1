@@ -73,7 +73,15 @@ def parse_company_info(response):
             inner = list(data.values())[0]
             if isinstance(inner, dict):
                 data = inner
-        return flatten_json(data)
+
+        # JSON 평탄화
+        flattened = flatten_json(data)
+
+        # 언더바를 공백으로 치환하여 키 정규화
+        normalized = {k.replace("_", " "): v for k, v in flattened.items()}
+
+        return normalized
+
     except json.JSONDecodeError:
         parsed_response = {}
         try:
@@ -85,7 +93,9 @@ def parse_company_info(response):
                     parsed_response[clean_key] = value.strip().strip('"')
         except Exception as e:
             print(f"[ERROR] Failed to parse LangChain response: {e}")
-        return parsed_response
+
+        # 라인 단위 파싱 결과에도 언더바 -> 공백 치환
+        return {k.replace("_", " "): v for k, v in parsed_response.items()}
 
 def parse_langchain_response(response):
     """
