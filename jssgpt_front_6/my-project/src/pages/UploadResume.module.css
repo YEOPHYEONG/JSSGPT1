@@ -1,19 +1,26 @@
 /* src/pages/UploadResume.module.css */
 .container {
-  max-width: 800px;
-  margin: 0 auto;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  padding: 2rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  position: relative; /* 추가: 내부 요소의 절대 위치 기준 */
+  background-color:  rgba(17, 24, 39, 0);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  padding: 1rem;
 }
 
 .title {
-  font-size: 1.8rem;
-  text-align: center;
-  margin-bottom: 1rem;
+  font-size: 2.2rem;
+  margin-bottom: 2.2rem;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #777777b1;
+  margin-bottom: 1.5rem;
 }
 
 .form {
@@ -23,39 +30,33 @@
 }
 
 .uploadLabel {
-  background-color: #678f83;
-  padding: 0.7rem 1.2rem;
-  border-radius: 5px;
+  position: absolute; /* 우측 상단 고정을 위해 */
+  top: 30px;          /* 프로필 아이콘 아래 위치에 맞게 조정 (필요시 값 조절) */
+  right: 60px;        /* 우측 여백 */
+  background-color: #00000089;
+  padding: 1rem 1rem;
+  border-radius: 15px;
   cursor: pointer;
-  margin-bottom: 1rem;
   color: #ffffff;
   font-weight: bold;
-  transition: opacity 0.2s ease;
-}
-
-.uploadLabel:hover {
-  opacity: 0.9;
+  font-size:larger;
 }
 
 .fileInput {
   display: none;
 }
 
-.fileName {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  color: #333333;
-}
-
 .uploadButton {
-  background-color: #678f83;
-  border: none;
-  padding: 0.7rem 1.2rem;
+  background-color: #feee7d;
+  border:1px solid hsl(53, 98%, 44%);
+  padding: 0.5rem 1rem;
   border-radius: 5px;
   cursor: pointer;
-  color: #ffffff;
+  color: #000000;
   font-size: 1rem;
-  margin-top: 1rem;
+  font-weight: bold;
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  margin-top: 2rem;
   transition: opacity 0.2s ease;
 }
 
@@ -66,42 +67,34 @@
 .error {
   color: #ff6b6b;
   margin-bottom: 1rem;
-  text-align: center;
 }
 
-/* 로딩 상태를 위한 스타일 추가 */
-.loadingContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.loadingContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.spinner {
-  width: 60px;
-  height: 60px;
-  border: 6px solid rgba(101, 89, 89, 0.527);
-  border-top-color: #000000;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loadingText {
-  font-size: 2rem;
-  font-weight: bold;
+.fileName {
+  background-color:  #f2f4f5;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
   color: #000000;
-  margin-top: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: 'Pretendard', 'Spoqa Han Sans Neo', 'Gmarket Sans', sans-serif;
+  margin-top: 5rem;
+  margin-bottom: 12rem;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .uploadLabel {
+    top: 20px;
+    right: 20px;
+    font-size: 1rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .fileName {
+    margin-top: 2rem;
+    margin-bottom: 6rem;
+  }
 }
