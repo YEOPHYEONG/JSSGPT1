@@ -161,26 +161,37 @@ function EssayWrite() {
 
   const handleChange = (e) => {
     const newContent = e.target.value;
+  
+    // 변경된 내용 저장
     setEssayContents(prev => {
       const newArr = [...prev];
       newArr[activeIndex] = newContent;
       return newArr;
     });
-
+  
     if (isComposing) return;
+  
+    // 디바운스: 타이핑 멈춘 후 5초 뒤에 저장
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-
+  
     typingTimerRef.current = setTimeout(() => {
       handleAutoSave();
-    }, 5000); // 타이핑 멈추고 5초 후에만 저장 시도
+      typingTimerRef.current = null;
+    }, 5000);
   };
-
+  
   const handleCompositionStart = () => setIsComposing(true);
   const handleCompositionEnd = (e) => {
     setIsComposing(false);
-    handleChange(e);
+  
+    const newContent = e.target.value;
+    setEssayContents(prev => {
+      const newArr = [...prev];
+      newArr[activeIndex] = newContent;
+      return newArr;
+    });
   };
-
+  
   const handleTabClick = (index) => {
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
     handleAutoSave();
