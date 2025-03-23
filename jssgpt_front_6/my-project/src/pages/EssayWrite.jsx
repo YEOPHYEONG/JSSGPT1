@@ -126,7 +126,7 @@ function EssayWrite() {
   const handleAutoSave = useCallback(async () => {
     const promptId = mergedQuestions[activeIndex]?.id;
     const content = essayContents[activeIndex];
-    if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent || isSaving) return;
+    if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent || isSaving || isComposing) return;
 
     try {
       setIsSaving(true);
