@@ -16,6 +16,7 @@ logger = logging.getLogger('django')
 # OpenAI API 설정
 llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0.8)
 
+
 @login_required
 def create_cover_letter(request, recruit_job_id):
     """
@@ -26,8 +27,8 @@ def create_cover_letter(request, recruit_job_id):
     recruit_job = get_object_or_404(RecruitJob, id=recruit_job_id)
     prompts = CoverLetterPrompt.objects.filter(recruit_job=recruit_job)
 
-    # 이미 추천된 경험의 ID를 추적하는 집합
-    recommended_ids = set()
+    # 이미 추천된 경험의 제목을 추적하는 집합 (중복 추천 방지)
+    recommended_titles = set()
 
     cover_letters = []
     for prompt in prompts:
@@ -40,8 +41,8 @@ def create_cover_letter(request, recruit_job_id):
         # 추천 STARExperience가 없으면 LLM 호출
         if not cover_letter.recommended_starexperience.exists():
             try:
-                # 이미 추천된 경험은 제외한 STARExperience 조회
-                star_experiences = STARExperience.objects.filter(user=user).exclude(id__in=recommended_ids)
+                # 이미 추천된 경험 제목은 제외한 STARExperience 조회
+                star_experiences = STARExperience.objects.filter(user=user).exclude(title__in=recommended_titles)
                 # 후보 경험이 없다면 빈 문자열 전달
                 star_texts = "\n".join([f"{star.title}: {star.situation}" for star in star_experiences]) if star_experiences.exists() else ""
                 prompt_text = f"""
@@ -126,8 +127,14 @@ def create_cover_letter(request, recruit_job_id):
                             continue
                 recommended_stars = STARExperience.objects.filter(id__in=new_recommended_ids)
                 cover_letter.recommended_starexperience.add(*recommended_stars)
-                # 새로 추천된 경험 ID들을 전체 추천 집합에 추가
-                recommended_ids.update(new_recommended_ids)
+                #디버깅
+                logger.debug(f"Prompt {prompt.id} | recommended_ids={new_recommended_ids}")
+                logger.debug(f"CoverLetter {cover_letter.id} now has recommended experiences: "
+                             f"{list(cover_letter.recommended_starexperience.values('id','title'))}")
+
+                # 새로 추천된 경험들의 제목을 추적 집합에 추가
+                for star in recommended_stars:
+                    recommended_titles.add(star.title)
             except Exception as e:
                 logger.error(f"Error recommending STARExperience for prompt {prompt.id}: {e}")
         cover_letters.append(cover_letter)
@@ -151,6 +158,8 @@ def create_cover_letter(request, recruit_job_id):
                     },
                     'recommended': recommended_list
                 })
+            logger.debug(f"[create_cover_letter GET] returning data: {json.dumps(data, ensure_ascii=False)}")
+            
             return JsonResponse({'prompts': data}, safe=False)
         return render(request, 'user_coverletter/create_cover_letter.html', {
             'recruit_job': recruit_job,
@@ -187,8 +196,15 @@ def generate_cover_letter_draft(request, recruit_job_id,):
                     user=user, recruit_job=recruit_job, prompt=prompt
                 )
                 star_experience = cover_letter.selected_starexperience
+                # selected_starexperience가 없으면 recommended_starexperience에서 하나 선택
                 if not star_experience:
-                    return JsonResponse({'error': f"No STAR experience selected for prompt {prompt.id}"}, status=400)
+                    recommended = cover_letter.recommended_starexperience.first()
+                    if recommended:
+                        cover_letter.selected_starexperience = recommended
+                        cover_letter.save()
+                        star_experience = recommended
+                    else:
+                        return JsonResponse({'error': f"No STAR experience selected for prompt {prompt.id}"}, status=400)
 
                 prompt_text = f"""
                 이제 {prompt.outline}를 바탕으로 문항별로 작성해줘. 다음 요소들을 모두 반영해야 해:
@@ -197,11 +213,9 @@ def generate_cover_letter_draft(request, recruit_job_id,):
                 - 해당 문항에 매칭된 {star_experience}을 구체적인 사례로 서술하기 (STAR 구조에서 도출한 내용 활용).
                 - **자기소개서 가이드라인**에서 제시한 어조나 작성 원칙 지키기 (논리적 흐름, 적극적 표현, 간결한 문장 등).
                 - 문항에서 요구하는 질문에 정확히 답하기.
-
-                한두 개 단락으로 구성된 답변을 작성해줘. 답변은 **지원자가 직접 쓴 것처럼 자연스러운 1인칭**으로 서술하고, 회사와 직무에 대한 열의를 담아 긍정적으로 표현해줘.
                 """
+
                 response = llm.predict(prompt_text)
-                # LLM 응답 로깅 추가
                 logger.info(f"LLM draft response for prompt {prompt.id}: {response}")
                 cover_letter.content = response
                 cover_letter.draft = False
@@ -218,7 +232,6 @@ def generate_cover_letter_draft(request, recruit_job_id,):
             return JsonResponse({'error': 'Error generating drafts.'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=400)
-
 
 @login_required
 def edit_cover_letter(request, pk):
