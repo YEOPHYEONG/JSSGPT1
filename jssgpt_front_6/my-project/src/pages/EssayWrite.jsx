@@ -9,7 +9,7 @@ import { getCookie } from '../utils/utils';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 
-// 자동 저장 API 함수: DB의 cover letter content 업데이트
+// 자동 저장 API 함수
 async function saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content) {
   console.log(
     `[AutoSave] company=${companyName}, recruitment=${recruitmentTitle}, promptId=${promptId}, content=${content}`
@@ -36,9 +36,7 @@ function EssayWrite() {
   const navigate = useNavigate();
   const location = useLocation();
   const { companyName, recruitmentTitle, questions, recruitJobId } = location.state || {};
- 
 
-  // 필수 데이터가 없으면 5초 후에 페이지 새로고침
   useEffect(() => {
     if (!companyName || !recruitmentTitle || !questions || !recruitJobId) {
       const timer = setTimeout(() => {
@@ -52,27 +50,22 @@ function EssayWrite() {
     return <p>필수 정보가 부족합니다. 5초 후에 다시 시도합니다...</p>;
   }
 
-  // 현재 선택된 질문(탭) 인덱스
   const [activeIndex, setActiveIndex] = useState(0);
   const initialContents = questions.map(q => q.content || '');
   const [essayContents, setEssayContents] = useState(initialContents);
-  // DB에서 가져온 cover letter 내용: { promptId: content }
   const [coverContentMap, setCoverContentMap] = useState({});
   const [isPolling, setIsPolling] = useState(true);
   const [typingTimer, setTypingTimer] = useState(null);
-  // 마지막 저장된 내용 추적
   const [lastSavedContent, setLastSavedContent] = useState('');
-  // IME 조합 상태 추적
   const [isComposing, setIsComposing] = useState(false);
 
-  // 폴링: 일정 간격마다 DB에서 cover letter 내용을 가져옴
   useEffect(() => {
     const interval = setInterval(() => {
       axios.get(`/api/cover-letter/get/?recruit_job_id=${recruitJobId}`, {
         withCredentials: true,
       })
       .then(res => {
-        const data = res.data; // 예: { "1": "내용...", "3": "내용...", ... }
+        const data = res.data;
         const hasContent = Object.values(data).some(content => content && content.trim().length > 0);
         if (hasContent) {
           setCoverContentMap(data);
@@ -87,7 +80,6 @@ function EssayWrite() {
     return () => clearInterval(interval);
   }, [recruitJobId]);
 
-  // mergedQuestions: questions 배열과 coverContentMap을 결합
   const mergedQuestions = useMemo(() => {
     return questions.map(q => ({
       ...q,
@@ -95,7 +87,6 @@ function EssayWrite() {
     }));
   }, [questions, coverContentMap]);
 
-  // coverContentMap 업데이트 후 essayContents 및 lastSavedContent 업데이트
   useEffect(() => {
     if (Object.keys(coverContentMap).length > 0) {
       const newContents = mergedQuestions.map(q => coverContentMap[q.id] || q.content || '');
@@ -110,7 +101,6 @@ function EssayWrite() {
   const currentLimit = mergedQuestions[activeIndex]?.limit;
   const currentQuestionText = mergedQuestions[activeIndex].question_text;
 
-  // 자동 저장 함수: 변경된 경우에만 저장
   const handleAutoSave = useCallback(async () => {
     if (currentContent.trim().length === 0) return;
     if (currentContent === lastSavedContent) return;
@@ -139,10 +129,7 @@ function EssayWrite() {
     setTypingTimer(newTimer);
   };
 
-  const handleCompositionStart = () => {
-    setIsComposing(true);
-  };
-
+  const handleCompositionStart = () => setIsComposing(true);
   const handleCompositionEnd = (e) => {
     setIsComposing(false);
     handleChange(e);
@@ -168,27 +155,24 @@ function EssayWrite() {
   return (
     <>
       <Header />
-    {isPolling ? (
-  <div className={styles.loadingContainer}>
-    <div className={styles.loadingContent}>
-      <div className={styles.spinner}></div> {/* ✅ 로딩 아이콘 */}
-      <p className={styles.loadingText}>자기소개서를 불러오는 중입니다...</p>
-
-      {/* ✅ 뒤로가기 버튼 (원하면 삭제 가능) */}
-      <button className={styles.backButton} onClick={handleGoBack}>
-        뒤로가기
-      </button>
-    </div>
-  </div>
-) : (
+      {isPolling ? (
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingContent}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loadingText}>자기소개서를 불러오는 중입니다...</p>
+            <button className={styles.backButton} onClick={handleGoBack}>
+              뒤로가기
+            </button>
+          </div>
+        </div>
+      ) : (
         <div className={styles.essayContainer}>
           <div className={styles.leftSection}>
             <div className={styles.topBar}>
               <span className={styles.companyName}>{companyName}</span>
-              <span className={styles.recruitmentTitle}> 💼 채용직무: {recruitmentTitle}</span>
+              <span className={styles.recruitmentTitle}> 💼 채용직무 : {recruitmentTitle}</span>
             </div>
             <div className={styles.essayWriteArea}>
-              {/* 문항 탭 (가로 배치) */}
               <div className={styles.questionTabs}>
                 {mergedQuestions.map((q, index) => (
                   <div
@@ -203,7 +187,7 @@ function EssayWrite() {
                 ))}
               </div>
               <div className={styles.essayBox}>
-                <div className={styles.questionText}>{currentQuestionText}</div>
+                <div className={styles.questionText}>📝 {currentQuestionText}</div>
                 <div className={styles.charCount}>
                   {currentContent.length} / {currentLimit}
                 </div>
