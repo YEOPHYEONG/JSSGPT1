@@ -125,7 +125,7 @@ def create_cover_letter(request, recruit_job_id):
                             new_recommended_ids.append(int(rec))
                         except (ValueError, TypeError):
                             continue
-                recommended_stars = STARExperience.objects.filter(id__in=new_recommended_ids)
+                recommended_stars = STARExperience.objects.filter(user=user, id__in=new_recommended_ids)
                 cover_letter.recommended_starexperience.add(*recommended_stars)
                 #디버깅
                 logger.debug(f"Prompt {prompt.id} | recommended_ids={new_recommended_ids}")
@@ -184,7 +184,7 @@ def create_cover_letter(request, recruit_job_id):
 
 
 @login_required
-def generate_cover_letter_draft(request, recruit_job_id,):
+def generate_cover_letter_draft(request, recruit_job_id):
     if request.method == "POST":
         try:
             user = request.user
@@ -196,7 +196,7 @@ def generate_cover_letter_draft(request, recruit_job_id,):
                     user=user, recruit_job=recruit_job, prompt=prompt
                 )
                 star_experience = cover_letter.selected_starexperience
-                # selected_starexperience가 없으면 recommended_starexperience에서 하나 선택
+                # selected_starexperience가 없으면, recommended_starexperience 중 첫 번째를 선택하도록 함
                 if not star_experience:
                     recommended = cover_letter.recommended_starexperience.first()
                     if recommended:
@@ -214,7 +214,6 @@ def generate_cover_letter_draft(request, recruit_job_id,):
                 - **자기소개서 가이드라인**에서 제시한 어조나 작성 원칙 지키기 (논리적 흐름, 적극적 표현, 간결한 문장 등).
                 - 문항에서 요구하는 질문에 정확히 답하기.
                 """
-
                 response = llm.predict(prompt_text)
                 logger.info(f"LLM draft response for prompt {prompt.id}: {response}")
                 cover_letter.content = response
