@@ -102,7 +102,15 @@ function CompanyRecruitDetail() {
                 onClick={() => handleCardClick(job)}
               >
                 {/* ✅ hover 멘트 */}
-                <div className={styles.hoverMessage}> 자기소개서 작성!</div>
+                <div className={styles.hoverMessage}
+                onClick={(e) => {
+    // 부모의 onClick 이벤트가 중복 실행되지 않도록 전파를 막음
+    e.stopPropagation();
+    // jobCard 클릭 시와 동일하게 handleCardClick 호출
+    handleCardClick(job);
+  }}
+>                
+                  자기소개서 작성!</div>
 
                 <header className={styles.jobHeader}>
                   <h3 className={styles.jobTitle}>{job.title}</h3>
