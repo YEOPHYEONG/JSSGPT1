@@ -53,7 +53,8 @@ function EssayWrite() {
   const [typingTimer, setTypingTimer] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState('');
   const [isComposing, setIsComposing] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false); // ✅ 추가
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // ✅ 추가
 
   useEffect(() => {
     if ((!initialCompanyName || !initialRecruitmentTitle || !initialQuestions) && recruitJobId) {
@@ -114,7 +115,7 @@ function EssayWrite() {
       const newContents = mergedQuestions.map(q => coverContentMap[q.id] || q.content || '');
       setEssayContents(newContents);
       setLastSavedContent(newContents[activeIndex]);
-      setHasInitialized(true); // ✅ 최초 1회만 초기화
+      setHasInitialized(true);
     }
   }, [coverContentMap, mergedQuestions, activeIndex, hasInitialized]);
 
@@ -125,9 +126,10 @@ function EssayWrite() {
   const handleAutoSave = useCallback(async () => {
     const promptId = mergedQuestions[activeIndex]?.id;
     const content = essayContents[activeIndex];
-    if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent) return;
+    if (!promptId || !content || content.trim().length === 0 || content === lastSavedContent || isSaving) return;
 
     try {
+      setIsSaving(true);
       await saveEssayToDB(companyName, recruitmentTitle, promptId, recruitJobId, content);
       setLastSavedContent(content);
 
@@ -145,8 +147,10 @@ function EssayWrite() {
       console.log("✅ Auto-save success:", promptId);
     } catch (error) {
       console.error("❌ Auto-save failed:", error);
+    } finally {
+      setIsSaving(false);
     }
-  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle, mergedQuestions]);
+  }, [activeIndex, essayContents, lastSavedContent, recruitJobId, companyName, recruitmentTitle, mergedQuestions, isSaving]);
 
   const handleChange = (e) => {
     const newContent = e.target.value;
@@ -159,7 +163,7 @@ function EssayWrite() {
     if (typingTimer) clearTimeout(typingTimer);
     const newTimer = setTimeout(() => {
       handleAutoSave();
-    }, 3000);
+    }, 5000); // ⏱️ 5초로 증가
     setTypingTimer(newTimer);
   };
 
