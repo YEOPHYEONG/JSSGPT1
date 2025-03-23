@@ -25,7 +25,9 @@ def create_cover_letter(request, recruit_job_id):
     recruit_job = get_object_or_404(RecruitJob, id=recruit_job_id)
     prompts = CoverLetterPrompt.objects.filter(recruit_job=recruit_job)
 
-    # 1. UserCoverLetter 생성/가져오기 + 추천 STARExperience 처리
+    # 이미 추천된 경험의 ID를 추적하는 집합
+    recommended_ids = set()
+
     cover_letters = []
     for prompt in prompts:
         cover_letter, created = UserCoverLetter.objects.get_or_create(
@@ -34,11 +36,13 @@ def create_cover_letter(request, recruit_job_id):
             prompt=prompt,
             defaults={'content': "", 'draft': True}
         )
-        # 추천 STARExperience가 없으면 OpenAI 호출
+        # 추천 STARExperience가 없으면 LLM 호출
         if not cover_letter.recommended_starexperience.exists():
             try:
-                star_experiences = STARExperience.objects.filter(user=user)
-                star_texts = "\n".join([f"{star.title}: {star.situation}" for star in star_experiences])
+                # 이미 추천된 경험은 제외한 STARExperience 조회
+                star_experiences = STARExperience.objects.filter(user=user).exclude(id__in=recommended_ids)
+                # 만약 후보 경험이 없다면 빈 문자열 전달
+                star_texts = "\n".join([f"{star.title}: {star.situation}" for star in star_experiences]) if star_experiences.exists() else ""
                 prompt_text = f"""
                 너의 목표는 아래 자기소개서 아웃라인에 가장 적합한 경험(STAR 구조 기반)을,  
                 논리적으로 판단하고, 가장 잘 어울리는 하나의 경험 ID만 선택하는 거야.
@@ -88,13 +92,12 @@ def create_cover_letter(request, recruit_job_id):
 
                 ```json
                 [1]
+                ```
                 """
                 response = llm.predict(prompt_text)
-                # LLM 응답 로깅 추가
                 logger.info(f"LLM response for prompt {prompt.id}: {response}")
                 recommended_raw = json.loads(response)
-                # recommended_raw가 객체 리스트인 경우, 각 항목에서 'STARExperienceID' 키의 값을 추출
-                recommended_ids = []
+                new_recommended_ids = []
                 for rec in recommended_raw:
                     if isinstance(rec, dict):
                         rec_id = rec.get("STARExperienceID")
@@ -102,19 +105,21 @@ def create_cover_letter(request, recruit_job_id):
                             rec_id = int(rec_id)
                         except (ValueError, TypeError):
                             continue
-                        recommended_ids.append(rec_id)
+                        new_recommended_ids.append(rec_id)
                     else:
                         try:
-                            recommended_ids.append(int(rec))
+                            new_recommended_ids.append(int(rec))
                         except (ValueError, TypeError):
                             continue
-                recommended_stars = STARExperience.objects.filter(id__in=recommended_ids)
+                recommended_stars = STARExperience.objects.filter(id__in=new_recommended_ids)
                 cover_letter.recommended_starexperience.add(*recommended_stars)
+                # 새로 추천된 경험 ID들을 전체 추천 집합에 추가
+                recommended_ids.update(new_recommended_ids)
             except Exception as e:
                 logger.error(f"Error recommending STARExperience for prompt {prompt.id}: {e}")
         cover_letters.append(cover_letter)
 
-    # ---- GET 요청 ----
+    # ---- GET 요청 처리 ----
     if request.method == 'GET':
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             data = []
@@ -141,7 +146,7 @@ def create_cover_letter(request, recruit_job_id):
             'cover_letters': cover_letters,
         })
 
-    # ---- POST 요청 ----
+    # ---- POST 요청 처리 ----
     if request.method == 'POST':
         for prompt in prompts:
             cover_letter = next(
