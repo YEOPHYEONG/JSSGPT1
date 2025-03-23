@@ -204,30 +204,87 @@ def generate_and_save_job_info(company_name, recruitment, job_title, recruit_job
 
 def generate_and_save_cover_letter_outline(prompt_instance):
     """
-    주어진 CoverLetterPrompt 인스턴스에 대해, LLM을 호출하여 자기소개서 문항 개요(outline)를 생성하고 DB에 저장합니다.
-    각 prompt 인스턴스마다 개별적으로 outline을 생성하며, 기존 인스턴스는 새로 생성하지 않고 업데이트합니다.
+    주어진 CoverLetterPrompt 인스턴스에 대해, LLM을 호출하여
+    채용 회사 및 직무 정보를 포함한 자기소개서 문항 개요(outline)를 생성하고 DB에 저장합니다.
+    만약 이미 개요가 생성되어 있다면, 기존 개요를 그대로 반환합니다.
     """
     if prompt_instance.outline:
         print(f"[DEBUG] CoverLetterOutline already exists for prompt id: {prompt_instance.id}")
         return prompt_instance
 
-    prompt_text = f"""
-    이제 채용 회사와 직무 정보를 바탕으로 자기소개서의 전체 **개요(아웃라인)**를 만들어줘. 우선 자기소개서 문항들을 파악해야 해.
+    # DB에서 연결된 직무, 채용 공고, 그리고 회사 정보를 가져옴.
+    job = prompt_instance.recruit_job
+    recruitment = job.recruitment
+    company = recruitment.company
 
-    자기소개서 문항:  
+    # 회사 정보 구성
+    company_info = (
+        f"회사명: {company.name}\n"
+        f"산업: {company.industry}\n"
+        f"비전: {company.vision}\n"
+        f"미션: {company.mission}\n"
+        f"핵심가치: {company.core_values}\n"
+        f"최근 성과: {company.recent_achievements}\n"
+        f"주요 이슈: {company.key_issues}"
+    )
+
+    # 직무 정보 구성
+    job_info = (
+        f"직무명: {job.title}\n"
+        f"직무 설명: {job.description}\n"
+        f"수행 업무: {job.key_roles}\n"
+        f"필요한 기술: {job.required_skills}\n"
+        f"관련 소프트 스킬: {job.soft_skills}\n"
+        f"필요 강점: {job.related_technologies}"
+    )
+
+    # LLM에게 전달할 프롬프트 텍스트 구성
+    prompt_text = f"""
+    아래 정보를 바탕으로 자기소개서 답변 개요를 작성해줘. 단, 단순 요약이나 키워드 나열이 아닌, 다음 단계에 따라 논리적으로 사고하고 추론해서 구성해줘.
+
+    [회사 정보]
+    {company_info}
+
+    [직무 정보]
+    {job_info}
+
+    [자기소개서 문항]
     {prompt_instance.question_text}
 
-    이제 각 문항에 대해 답변의 개요를 작성해줘. 개요에는 다음 내용이 들어가면 좋겠어:
+    ---
 
-    - 핵심 주제: 해당 문항에서 강조해야 할 내용이 무엇인지 한 문장으로 요약 (예: 지원 동기에서는 왜 이 회사인지에 대한 설명).
-    - 포함할 키워드: 회사 조사와 직무 조사에서 찾은 관련 키워드나 개념 중 해당 문항에 넣으면 좋은 것.
-    - 경험 사례 연결: 답변에 활용할 만한 지원자의 경험이나 역량 (현재 단계에서 지원자 경험 정보가 없으면 일반적인 예시로 적어줘. 만약 지원자 경험이 주어져 있다면 그 중 어떤 것을 사용할지 제안).
+    각 문항에 대해 아래 단계를 따라 하나씩 생각하고 작성해줘:
 
-    각 문항별로 bullet point 형태로 개요를 제시해줘. 이 개요는 나중에 실제 자기소개서 답안을 작성할 때 가이드라인이 될 거야.
-    동시에 개요에는 다음 내용을 유의하여 작성해줘.
-    1. 한 문항에는 하나의 경험만 서술할 것.
-    2. 같은 {prompt_instance.recruit_job}의 자기소개서를 작성할 때, 문항들이 각기 다른 경험, 역량을 강조할 수 있도록 개요를 작성할 것.
+    ### 1단계: 회사 인재상 분석
+    - 회사 정보에서 드러나는 기업 가치, 조직 문화, 채용 시 중시하는 인재상 등을 추론해 정리해줘.
+    - "이 회사가 중요하게 생각하는 역량/태도는 무엇인가?"에 대한 가설을 세워줘.
+
+    ### 2단계: 직무 역량 도출
+    - 직무 정보에서 해당 포지션에 필요한 핵심 역량, 기술, 역할을 분석해 정리해줘.
+    - 이 직무에서 중요하게 작용할 수 있는 태도나 방식(예: 커뮤니케이션, 문제해결 방식 등)도 포함해줘.
+
+    ### 3단계: 문항 의도 분석 및 핵심 주제 설정
+    - 문항이 평가하고자 하는 역량이나 성향이 무엇인지 추론해줘.
+    - 문항의 방향성에 맞춰 답변에서 강조해야 할 핵심 주제를 한 문장으로 요약해줘.
+
+    ### 4단계: 키워드 선정
+    - 위 단계들에서 도출한 정보들을 바탕으로, 이 문항에 포함할 키워드를 선정해줘.
+    - 키워드는 회사 가치, 직무 역량, 경험 사례와 연결될 수 있어야 해.
+
+    ### 5단계: 경험 사례 매칭
+    - 지원자의 경험 중, 이 문항의 핵심 주제 및 키워드와 가장 잘 연결될 수 있는 하나의 사례를 선택해줘.
+    - 사례는 회사와 직무가 요구하는 가치/역량과 연결되어야 하며, 다른 문항과 중복되지 않아야 해.
+    - 선택한 경험에서 보여줄 수 있는 구체적인 행동과 결과를 간략히 요약해줘.
+
+    ---
+
+    주의사항:
+    - 하나의 문항에는 하나의 주요 경험만 사용해.
+    - 동일한 직무 내 다른 문항들과는 다른 경험과 역량을 반영하도록 구성해.
+    - 각 단계마다 reasoning이 보이도록 작성해줘. 단순 나열이 아닌 “왜 그런 선택을 했는지”를 설명해줘.
     """
+
+    # LLM 호출하여 개요 생성 후 저장
     outline = llm.predict(prompt_text)
     prompt_instance.outline = outline
     prompt_instance.save()
