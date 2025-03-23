@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     // 세션 기반이므로 로컬 스토리지는 사용하지 않음.
     setUser(null);
+    alert("로그아웃 되었습니다.")
   };
 
   return (
