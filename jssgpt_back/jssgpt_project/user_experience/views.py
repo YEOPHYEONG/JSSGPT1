@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 import logging
 
 from .models import RawExperience, STARExperience
+from langchain_app.models import CoverLetterGuide
 from .forms import ResumeUploadForm
 from .utils import calculate_similarity
 
@@ -89,33 +90,58 @@ def upload_resume(request):
                 raw_experience.save()
                 logger.debug(f"Updated RawExperience: {raw_experience}")
 
+                # CoverLetterGuide에서 STARExperience_guide 조회
+                guide_instance = CoverLetterGuide.objects.filter(title='STARExperience_guide').first()
+                guide_text = guide_instance.content if guide_instance else ""
+
                 # Step 3: OpenAI GPT 호출
                 prompt = f"""
                 다음은 사용자의 이력서에서 추출한 텍스트야.
 
-                텍스트: {extracted_text}
+                텍스트:
+                {extracted_text}
 
-                너의 목표는, 이 텍스트에서 자기소개서 작성에 활용할 수 있는 경험들을 찾아, 설득력 있는 STAR 구조로 재구성하는 거야.  
-                단순한 요약이 아니라, **자기소개서에 들어갈 수 있을 만큼 논리적이고 명확한 흐름을 가진 경험**이 되도록 해줘.
-
-                각 경험을 STAR 구조로 정리하기 전에, 다음 기준에 따라 논리적으로 판단하고 구성해줘:
+                너의 목표는, 이 텍스트 안에서 자기소개서에 적합한 경험을 식별하고,  
+                각 경험을 STAR 구조로 정리하되, **3C 프레임워크와 4P 프레임워크 요소를 적절히 반영하여 더 설득력 있는 구성**으로 만들어주는 것이야.
 
                 ---
 
-                ### [Reasoning 단계 안내]
+                ### 🔍 작업 방식 안내 (Reasoning을 위한 단계)
 
-                1. **경험 식별**  
-                - 텍스트를 읽고, 하나의 명확한 사건이나 프로젝트, 역할 수행이 드러나는 단위를 "하나의 경험"으로 간주해.
-                - 비슷한 활동이라도 주체가 다른 문제를 해결했다면 별개의 경험으로 나눠.
+                #### 1단계: 경험 식별
+                - 텍스트에서 한 개의 명확한 활동, 프로젝트, 도전이 드러나는 단위를 "하나의 경험"으로 간주해.
+                - 그 안에서 당사자가 직접 주도하거나 기여한 사례를 우선적으로 선택해.
 
-                2. **STAR 구성 판단 기준**
-                - S(상황): 경험이 일어난 맥락, 배경, 조직, 관련된 사람이나 문제 상황이 명확해야 해.
-                - T(과제): 그 상황에서 당사자가 수행해야 했던 **도전적이거나 목표 지향적인 과제**를 추론해. 단순한 업무 지시는 피하고, 스스로 해결해야 했던 문제에 집중해서 서술해.
-                - A(행동): 당사자가 실제로 했던 행동을 구체적으로, **문제 해결 방식, 순서, 협업 여부, 판단의 근거** 등을 포함해서 최소 3문장으로 서술해.
-                - R(결과): 결과는 측정 가능하거나, 성과로 인식될 수 있는 명확한 한 줄로 정리해. 단, 정보가 부족하면 "경험을 입력해주세요"로 처리해.
+                #### 2단계: STAR 구성 (3C + 4P 융합 포함)
+                각 경험은 아래와 같은 논리적 구조로 정리해줘:
 
-                3. **불완전한 정보 판단**
-                - 위의 판단 기준에 따라, 정보가 부족하거나 명확하지 않으면 그 항목에는 `"경험을 입력해주세요"`를 넣어줘.
+                **title**  
+                → 해당 경험을 한 문장으로 요약한 제목
+
+                **situation** (3C: Customer, Company)  
+                → 어떤 배경에서 이 일이 발생했는지 설명해줘.  
+                → 특히, 누구를 위한 활동이었는지(Customer), 어떤 조직의 맥락(Company)에서 일어났는지 포함해줘.
+
+                **task** (Company + 경쟁 환경)  
+                → 그 상황에서 당사자가 맡았던 과제를 설명해줘.  
+                → 과제가 생긴 이유, 달성하고자 한 목표 등을 회사의 목표나 경쟁 요소와 연결해서 설명해.
+
+                **action** (4P: Product, Place, Promotion)  
+                → 당사자가 구체적으로 수행한 행동을 자세히 설명해줘.  
+                → 특히 어떤 결과물을 만들었는지(Product), 어디서 수행했고 그 이유는 무엇인지(Place), 어떻게 확산/홍보했는지(Promotion) 등의 측면을 반영해줘.
+
+                **result** (4P: Price)  
+                → 행동의 결과가 수치나 반응 등으로 어떻게 나타났는지 설명해줘.  
+                → 가능하면 고객 만족도, 내부 평가, 성과 지표 등으로 표현해.
+
+                📌 프레임워크 요소는 STAR 항목에 자연스럽게 녹여서 표현하고, 어떤 프레임워크 요소를 참고했는지도 내부적으로 고려해서 작성해줘.
+
+                ---
+
+                ### 주의사항
+                - 정보가 부족하거나 불명확한 항목은 `"경험을 입력해주세요"`로 처리해.
+                - 하나의 경험에 대해 title, situation, task, action, result를 모두 포함한 JSON 객체로 표현하고, 여러 경험이 있다면 배열로 반환해.
+                - 출력은 반드시 JSON 형식으로만, 설명 없이 순수 데이터로 반환해.
 
                 ---
 
