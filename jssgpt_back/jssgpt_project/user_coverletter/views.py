@@ -162,9 +162,7 @@ def create_cover_letter(request, recruit_job_id):
     # ---- POST 요청 처리 ----
     if request.method == 'POST':
         for prompt in prompts:
-            cover_letter = next(
-                (cl for cl in cover_letters if cl.prompt == prompt), None
-            )
+            cover_letter = next((cl for cl in cover_letters if cl.prompt == prompt), None)
             selected_star_id = request.POST.get(f'selected_star_{prompt.id}')
             if selected_star_id and cover_letter:
                 try:
