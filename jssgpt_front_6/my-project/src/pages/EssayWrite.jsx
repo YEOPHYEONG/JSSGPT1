@@ -117,12 +117,11 @@ function EssayWrite() {
     if (Object.keys(coverContentMap).length > 0) {
       const newContents = mergedQuestions.map(q => coverContentMap[q.id] || q.content || '');
       setEssayContents(newContents);
-      if (newContents[activeIndex] !== undefined) {
-        setLastSavedContent(newContents[activeIndex]);
-      }
+      // 여기서 activeIndex를 deps에 넣지 않음 → 탭 이동 시 초기화 방지
+      setLastSavedContent(newContents[activeIndex]); 
     }
-  }, [coverContentMap, activeIndex, mergedQuestions]);
-
+  }, [coverContentMap, mergedQuestions]); // ⛔ activeIndex 제거됨
+  
   const currentContent = essayContents[activeIndex] || '';
   const currentLimit = mergedQuestions[activeIndex]?.limit || 1000;
   const currentQuestionText = mergedQuestions[activeIndex]?.question_text || '';
@@ -162,9 +161,10 @@ function EssayWrite() {
 
   const handleTabClick = (index) => {
     handleAutoSave();
+    setLastSavedContent(essayContents[index]); // ✅ 새 탭 기준 저장 비교 초기화
     setActiveIndex(index);
   };
-
+  
   useEffect(() => {
     return () => {
       if (typingTimer) clearTimeout(typingTimer);
