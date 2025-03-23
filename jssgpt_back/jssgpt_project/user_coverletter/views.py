@@ -126,6 +126,9 @@ def create_cover_letter(request, recruit_job_id):
                         except (ValueError, TypeError):
                             continue
                 recommended_stars = STARExperience.objects.filter(user=user, id__in=new_recommended_ids)
+                if not recommended_stars.exists():
+                    # 사용자의 모든 STARExperience 중 첫 번째 항목을 fallback으로 사용
+                    recommended_stars = STARExperience.objects.filter(user=user)[:1]
                 cover_letter.recommended_starexperience.add(*recommended_stars)
                 #디버깅
                 logger.debug(f"Prompt {prompt.id} | recommended_ids={new_recommended_ids}")
