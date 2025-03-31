@@ -88,7 +88,7 @@ async def extract_modal_data(page, calendar_item):
                 label_elem = await item.query_selector("div.calendar-label.start")
                 if label_elem:
                     label_text = (await label_elem.inner_text()).strip()
-                    if label_text != "끝":
+                    if label_text != "시":
                         continue
                 link_elem = await item.query_selector("a.company")
                 if link_elem:
@@ -180,54 +180,32 @@ async def integrated_crawler(target_date, filter_company=None):
             viewport={"width": 800, "height": 600}
         )
         page = await context.new_page()
-        
-        # 이미지와 미디어만 차단(폰트는 차단하지 않음)
-        await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media"] else route.continue_())
-        
+        await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
         await page.goto("https://jasoseol.com/recruit")
-        # 네트워크 정리까지 기다림
-        await page.wait_for_load_state("networkidle")
-        logger.info("현재 페이지 URL: %s", page.url)
-        
-        # 캘린더 아이템 대기를 30초로 늘림, DOM에 붙어있는지만 확인(state="attached")
-        try:
-            await page.wait_for_selector("div.calendar-item", timeout=30000, state="attached")
-            logger.info("calendar-item 요소 발견됨")
-        except Exception as e:
-            page_html = await page.content()
-            logger.error("calendar-item 요소 대기 실패: %s", e)
-            logger.error("HTML 스니펫 (앞 1000글자): %s", page_html[:1000])
-            raise e
-
         try:
             await page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
             logger.info("메인 페이지 팝업 닫기 완료")
         except Exception as e:
             logger.info("메인 페이지 팝업 없음 또는 닫기 실패: %s", e)
-
         logger.info("선택한 날짜: %s", target_date)
         calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
         max_attempts = 12
         attempts = 0
         while not calendar_items and attempts < max_attempts:
             logger.info("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
-            next_buttons = await page.query_selector_all('[ng-click="addMonth(1)"]')
-            if not next_buttons:
-                logger.error("다음 달 버튼을 찾지 못했습니다.")
+            next_button = await page.query_selector('[ng-click="addMonth(1)"]')
+            if not next_button:
+                logger.info("다음 달 버튼을 찾을 수 없습니다.")
                 break
-            # 첫 번째 다음 달 버튼 클릭
-            next_button = next_buttons[0]
             await next_button.click()
             await page.wait_for_timeout(1000)
             calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
             attempts += 1
 
         if not calendar_items:
-            logger.info("%s에 해당하는 캘린더 아이템을 찾지 못했습니다.", target_date)
+            logger.info("%s에 해당하는 캘린더 아이템을 찾을 수 없습니다.", target_date)
             await browser.close()
             return
-
-        # 이후 크롤링 로직 계속…
 
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
@@ -236,7 +214,7 @@ async def integrated_crawler(target_date, filter_company=None):
                 label_elem = await comp.query_selector("div.calendar-label.start")
                 if label_elem:
                     label_text = (await label_elem.inner_text()).strip()
-                    if label_text == "끝":
+                    if label_text == "시":
                         href = await comp.get_attribute("href")
                         company_elem = await comp.query_selector("div.company-name span")
                         company_name = await company_elem.inner_text() if company_elem else "N/A"
