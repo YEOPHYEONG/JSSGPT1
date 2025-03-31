@@ -182,6 +182,7 @@ async def integrated_crawler(target_date, filter_company=None):
         page = await context.new_page()
         await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
         await page.goto("https://jasoseol.com/recruit")
+        await page.wait_for_selector("div.calendar-item", timeout=15000)
         try:
             await page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
             logger.info("메인 페이지 팝업 닫기 완료")
