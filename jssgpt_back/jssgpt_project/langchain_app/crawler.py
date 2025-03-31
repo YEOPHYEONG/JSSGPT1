@@ -182,7 +182,19 @@ async def integrated_crawler(target_date, filter_company=None):
         page = await context.new_page()
         await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
         await page.goto("https://jasoseol.com/recruit")
-        await page.wait_for_selector("div.calendar-item", timeout=15000)
+
+        # 디버깅: div.calendar-item 요소가 나타나기 전 페이지 HTML 일부 로그 (앞 1000글자)
+        page_html = await page.content()
+        logger.info("디버깅: 페이지 HTML (div.calendar-item 대기 전, 앞 1000글자): %s", page_html[:1000])
+        try:
+            # 상태를 attached로 변경해서 DOM에 요소가 붙어있는지만 확인 (보이지 않아도 OK)
+            await page.wait_for_selector("div.calendar-item", timeout=15000, state="attached")
+            logger.info("디버깅: div.calendar-item 요소 발견됨")
+        except Exception as e:
+            page_html = await page.content()
+            logger.error("디버깅: div.calendar-item 대기 실패. HTML 스니펫 (앞 1000글자): %s", page_html[:1000])
+            raise e
+
         try:
             await page.click("div.popup-close, div[data-sentry-component='PopupAdvertise'] button", timeout=5000)
             logger.info("메인 페이지 팝업 닫기 완료")
@@ -195,11 +207,10 @@ async def integrated_crawler(target_date, filter_company=None):
         while not calendar_items and attempts < max_attempts:
             logger.info("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
             
-            # 디버깅 로그: 페이지 HTML 스니펫 (앞 1000글자)
+            # 디버깅: 다음 달 버튼 찾기 전 페이지 HTML 일부 로그 (앞 1000글자)
             page_html = await page.content()
-            logger.info("디버깅: 페이지 HTML 스니펫 (앞 1000글자): %s", page_html[:1000])
+            logger.info("디버깅: 페이지 HTML 스니펫 (다음 버튼 찾기 전, 앞 1000글자): %s", page_html[:1000])
             
-            # 디버깅: [ng-click="addMonth(1)"] 셀렉터로 요소 찾기
             next_buttons = await page.query_selector_all('[ng-click="addMonth(1)"]')
             if not next_buttons:
                 logger.error("디버깅: [ng-click='addMonth(1)'] 셀렉터를 가진 요소를 찾지 못했습니다.")
@@ -224,7 +235,7 @@ async def integrated_crawler(target_date, filter_company=None):
             await browser.close()
             return
 
-        # 이후 크롤링 로직 계속…
+        # 이후 나머지 크롤링 로직 계속…
 
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
