@@ -194,10 +194,26 @@ async def integrated_crawler(target_date, filter_company=None):
         attempts = 0
         while not calendar_items and attempts < max_attempts:
             logger.info("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
-            next_button = await page.query_selector('[ng-click="addMonth(1)"]')
-            if not next_button:
-                logger.info("다음 달 버튼을 찾을 수 없습니다.")
+            
+            # 디버깅 로그: 페이지 HTML 스니펫 (앞 1000글자)
+            page_html = await page.content()
+            logger.info("디버깅: 페이지 HTML 스니펫 (앞 1000글자): %s", page_html[:1000])
+            
+            # 디버깅: [ng-click="addMonth(1)"] 셀렉터로 요소 찾기
+            next_buttons = await page.query_selector_all('[ng-click="addMonth(1)"]')
+            if not next_buttons:
+                logger.error("디버깅: [ng-click='addMonth(1)'] 셀렉터를 가진 요소를 찾지 못했습니다.")
+                body_elem = await page.query_selector("body")
+                if body_elem:
+                    body_html = await body_elem.inner_html()
+                    logger.info("디버깅: body HTML 스니펫 (앞 1000글자): %s", body_html[:1000])
                 break
+            else:
+                for idx, btn in enumerate(next_buttons):
+                    btn_html = await btn.inner_html()
+                    logger.info("디버깅: [ng-click='addMonth(1)'] 버튼 #%s HTML: %s", idx+1, btn_html)
+            
+            next_button = next_buttons[0]
             await next_button.click()
             await page.wait_for_timeout(1000)
             calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
@@ -207,6 +223,8 @@ async def integrated_crawler(target_date, filter_company=None):
             logger.info("%s에 해당하는 캘린더 아이템을 찾을 수 없습니다.", target_date)
             await browser.close()
             return
+
+        # 이후 크롤링 로직 계속…
 
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
