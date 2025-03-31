@@ -180,19 +180,23 @@ async def integrated_crawler(target_date, filter_company=None):
             viewport={"width": 800, "height": 600}
         )
         page = await context.new_page()
-        await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media", "font"] else route.continue_())
+        
+        # 이미지와 미디어만 차단(폰트는 차단하지 않음)
+        await page.route("**/*", lambda route: route.abort() if route.request.resource_type in ["image", "media"] else route.continue_())
+        
         await page.goto("https://jasoseol.com/recruit")
-
-        # 디버깅: div.calendar-item 요소가 나타나기 전 페이지 HTML 일부 로그 (앞 1000글자)
-        page_html = await page.content()
-        logger.info("디버깅: 페이지 HTML (div.calendar-item 대기 전, 앞 1000글자): %s", page_html[:1000])
+        # 네트워크 정리까지 기다림
+        await page.wait_for_load_state("networkidle")
+        logger.info("현재 페이지 URL: %s", page.url)
+        
+        # 캘린더 아이템 대기를 30초로 늘림, DOM에 붙어있는지만 확인(state="attached")
         try:
-            # 상태를 attached로 변경해서 DOM에 요소가 붙어있는지만 확인 (보이지 않아도 OK)
-            await page.wait_for_selector("div.calendar-item", timeout=15000, state="attached")
-            logger.info("디버깅: div.calendar-item 요소 발견됨")
+            await page.wait_for_selector("div.calendar-item", timeout=30000, state="attached")
+            logger.info("calendar-item 요소 발견됨")
         except Exception as e:
             page_html = await page.content()
-            logger.error("디버깅: div.calendar-item 대기 실패. HTML 스니펫 (앞 1000글자): %s", page_html[:1000])
+            logger.error("calendar-item 요소 대기 실패: %s", e)
+            logger.error("HTML 스니펫 (앞 1000글자): %s", page_html[:1000])
             raise e
 
         try:
@@ -200,30 +204,18 @@ async def integrated_crawler(target_date, filter_company=None):
             logger.info("메인 페이지 팝업 닫기 완료")
         except Exception as e:
             logger.info("메인 페이지 팝업 없음 또는 닫기 실패: %s", e)
+
         logger.info("선택한 날짜: %s", target_date)
         calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
         max_attempts = 12
         attempts = 0
         while not calendar_items and attempts < max_attempts:
             logger.info("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
-            
-            # 디버깅: 다음 달 버튼 찾기 전 페이지 HTML 일부 로그 (앞 1000글자)
-            page_html = await page.content()
-            logger.info("디버깅: 페이지 HTML 스니펫 (다음 버튼 찾기 전, 앞 1000글자): %s", page_html[:1000])
-            
             next_buttons = await page.query_selector_all('[ng-click="addMonth(1)"]')
             if not next_buttons:
-                logger.error("디버깅: [ng-click='addMonth(1)'] 셀렉터를 가진 요소를 찾지 못했습니다.")
-                body_elem = await page.query_selector("body")
-                if body_elem:
-                    body_html = await body_elem.inner_html()
-                    logger.info("디버깅: body HTML 스니펫 (앞 1000글자): %s", body_html[:1000])
+                logger.error("다음 달 버튼을 찾지 못했습니다.")
                 break
-            else:
-                for idx, btn in enumerate(next_buttons):
-                    btn_html = await btn.inner_html()
-                    logger.info("디버깅: [ng-click='addMonth(1)'] 버튼 #%s HTML: %s", idx+1, btn_html)
-            
+            # 첫 번째 다음 달 버튼 클릭
             next_button = next_buttons[0]
             await next_button.click()
             await page.wait_for_timeout(1000)
@@ -231,11 +223,11 @@ async def integrated_crawler(target_date, filter_company=None):
             attempts += 1
 
         if not calendar_items:
-            logger.info("%s에 해당하는 캘린더 아이템을 찾을 수 없습니다.", target_date)
+            logger.info("%s에 해당하는 캘린더 아이템을 찾지 못했습니다.", target_date)
             await browser.close()
             return
 
-        # 이후 나머지 크롤링 로직 계속…
+        # 이후 크롤링 로직 계속…
 
         for idx, item in enumerate(calendar_items):
             companies_from_item = []
