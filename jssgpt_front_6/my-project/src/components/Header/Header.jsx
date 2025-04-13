@@ -46,7 +46,7 @@ function Header({ onLogoClick }) {
     <header className={styles.header}>
       <div className={styles.logo} onClick={handleLogoClick}>
         <img
-          src="/assets/new-logo.svg"
+          src="/assets/production-logo.svg"
           alt="JSSGPT"
           className={styles.logoImage}
         />
