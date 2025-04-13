@@ -193,12 +193,47 @@ async def integrated_crawler(target_date, filter_company=None):
         attempts = 0
         while not calendar_items and attempts < max_attempts:
             logger.info("캘린더에 %s가 없습니다. 다음 달로 이동합니다. (시도 %s)", target_date, attempts + 1)
-            next_button = await page.query_selector('[ng-click="addMonth(1)"]')
+
+            # 1. 다음 달 버튼 선택자 수정
+            next_button_selector = "div.calendar-nav img[ng-click='addMonth(1)']"
+            current_month_display_selector = "div.calendar-nav > span.current"
+
+            # (선택 사항) 클릭 전 현재 월 확인
+            current_month_element = await page.query_selector(current_month_display_selector)
+            current_month_text = await current_month_element.inner_text() if current_month_element else ""
+
+            next_button = await page.query_selector(next_button_selector)
             if not next_button:
                 logger.info("다음 달 버튼을 찾을 수 없습니다.")
                 break
+
             await next_button.click()
-            await page.wait_for_timeout(1000)
+            logger.info("다음 달 버튼 클릭 완료.")
+
+            # 2. 대기 로직 개선 (월 표시 변경 대기 예시)
+            try:
+                await page.wait_for_function(
+                    f"""(selector, previous_text) => {{
+                        const element = document.querySelector(selector);
+                        // 현재 텍스트가 존재하고 이전 텍스트와 다른지 확인
+                        return element && element.innerText && element.innerText !== previous_text;
+                    }}""",
+                    (current_month_display_selector, current_month_text),
+                    timeout=10000 # 최대 10초 대기
+                )
+                new_month_element = await page.query_selector(current_month_display_selector)
+                new_month_text = await new_month_element.inner_text() if new_month_element else "N/A"
+                logger.info(f"다음 달 로드 확인 (표시: {new_month_text}).")
+                # 필요시 추가 대기
+                await page.wait_for_timeout(500) # 예: 0.5초 추가 대기
+
+            except Exception as wait_e:
+                logger.warning(f"다음 달 로드 확인 중 타임아웃 또는 오류 발생: {wait_e}")
+                # 실패 시 디버깅 정보 저장
+                await page.screenshot(path=f"debug_wait_fail_{target_date}.png")
+                break # 루프 중단
+
+            # 날짜 항목 다시 검색
             calendar_items = await page.query_selector_all(f"div.calendar-item[day='{target_date}']")
             attempts += 1
 
