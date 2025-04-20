@@ -305,21 +305,13 @@ def generate_cover_letter_draft(request, recruit_job_id):
 
                 ## 📝 출력 형식
 
-                - 자기소개서 본문 한 편만 출력할 것
+                - 네가 세운 자기소개서 설계와 자기소개서 본문을 2파트로 나눠서 출력할 것.
                 - 제목, 설명, 마크업 등은 포함하지 말고 본문만 출력
                 """
 
                 # 5) LLM 호출
                 response = llm.predict(prompt_text)
                 logger.info(f"LLM draft response for prompt {prompt.id}: {response}")
-
-                # 6) 혹시 LLM 응답이 제한 초과할 경우, 잘라내기 (필요 시)
-                #    -> 프로젝트 성격에 따라 2차 LLM 호출로 "축약" 시킬 수도 있음
-                if len(response) > char_limit:
-                    response = response[:char_limit]
-                    logger.warning(
-                        f"Truncated LLM response for prompt {prompt.id} to {char_limit} chars."
-                    )
 
                 # 7) DB 저장
                 cover_letter.content = response
