@@ -14,7 +14,7 @@ import re
 logger = logging.getLogger('django')
 
 # OpenAI API 설정
-llm = ChatOpenAI(model="gpt-4.1-2025-04-14", temperature=0.8)
+llm = ChatOpenAI(model="o4-mini-2025-04-16", temperature=0.8)
 
 
 @login_required
@@ -289,7 +289,8 @@ def generate_cover_letter_draft(request, recruit_job_id):
                 - 그리고 적절한 부분에 선택된 STAR경험을 자연스럽게 녹여낼 부분을 정해.
                 +) 단, 문항이 자기 경험 중심이 아닐 경우에는 STAR 경험을 억지로 넣지 말고,
                 +) 해당 문항에 더 적합한 방향성(지원 동기, 가치관 등)으로 풀어가.
-                +) 그리고 STAR 경험이 아닌 경험, 즉 원래 아웃라인에 있던 경험은 절대 쓰지 마.
+                +) 그리고 STAR 경험이 아닌 경험, 즉 원래 아웃라인에 있던 경험은 절대 쓰지 말고, STAR 경험을 토대로 자기소개서의 경험을 작성해.
+                +) 여기서 경험은 사용자가 한 일을 의미해.
 
                 ### 6단계. 자기소개서 작성
                 - 작성가이드에 따라서 설계한 방향성과 구성에 따라 자기소개서를 {char_limit}의 90%이상 글자수로 작성해
