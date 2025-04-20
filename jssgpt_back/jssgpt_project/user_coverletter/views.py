@@ -14,7 +14,7 @@ import re
 logger = logging.getLogger('django')
 
 # OpenAI API 설정
-llm = ChatOpenAI(model="o4-mini-2025-04-16", temperature=0.8)
+llm = ChatOpenAI(model="gpt-4.1-2025-04-14", temperature=0.8)
 
 
 @login_required
