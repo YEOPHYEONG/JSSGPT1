@@ -12,7 +12,7 @@ load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
 # OpenAI 설정
-llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0, openai_api_key=openai_api_key)
+llm = ChatOpenAI(model="gpt-4.1-2025-04-14", temperature=0, openai_api_key=openai_api_key)
 search_llm = ChatOpenAI(model="gpt-4o-search-preview-2025-03-11", temperature=None, openai_api_key=openai_api_key)
 
 def clean_json_response(response):
@@ -271,14 +271,10 @@ def generate_and_save_cover_letter_outline(prompt_instance):
     - 위 단계들에서 도출한 정보들을 바탕으로, 이 문항에 포함할 키워드를 선정해줘.
     - 키워드는 회사 가치, 직무 역량, 경험 사례와 연결될 수 있어야 해.
 
-    ### 5단계: 경험 사례 매칭
-    - 이 문항의 핵심 주제 및 키워드와 가장 잘 연결될 수 있는 경험의 키워드를 추천해줘.
-    - 경험은 회사와 직무가 요구하는 가치/역량과 연결되어야 하며, 다른 문항과 중복되지 않아야 해.
-    - 단, 경험이 필요없다고 판단되는 문항이라면, '경험 언급 필요 없음.'이라고 출력해줘.
     ---
 
     주의사항:
-    - 하나의 문항에는 하나의 주요 경험만 사용해.
+    - 하나의 문항에는 하나의 주요 경험만 사용해야한다는 것을 언급해줘.
     - 동일한 직무 내 다른 문항들과는 다른 경험과 역량을 반영하도록 구성해.
     - 각 단계마다 reasoning이 보이도록 작성해줘. 단순 나열이 아닌 “왜 그런 선택을 했는지”를 설명해줘.
     """
