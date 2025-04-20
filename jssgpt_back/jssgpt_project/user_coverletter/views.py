@@ -14,7 +14,7 @@ import re
 logger = logging.getLogger('django')
 
 # OpenAI API 설정
-llm = ChatOpenAI(model="gpt-4o-2024-11-20", temperature=0.8)
+llm = ChatOpenAI(model="gpt-4.1-2025-04-14", temperature=0.8)
 
 
 @login_required
@@ -298,7 +298,7 @@ def generate_cover_letter_draft(request, recruit_job_id):
                 - 어조: 간결하고 명확한 표현 사용, 말줄임표나 형식적인 표현 금지
                 - 강조: 수치 기반 결과 강조, 회사/직무와의 연결성 부각
                 - 자기소개서 작성 가이드에 맞춰서 작성해줘.
-                - 금지사항: {cover_letter_donts} 에 포함된 요소는 절대 사용하지 말 것
+                - 금지사항: {cover_letter_donts}를 읽고, 주해서 작성할 것
 
                 ---
 
